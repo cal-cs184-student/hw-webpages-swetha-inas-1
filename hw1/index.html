@@ -80,22 +80,75 @@
 		</div>
 		
 		<h2>Task 2: Antialiasing by Supersampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Supersampling is an approximation of 1-pixel box sampling and is useful for enabling anti-aliasing, which limits the effects of certain sampling artifacts like jaggies, false motion, and Moire. By taking multiple samples per pixel and averaging their color values, supersampling ensures the inclusion of intermediate colors, resulting in smoother transitions between pixels inside and outside the triangle and smoother edges overall. First, we resize the sample buffer to be of size width * height * sample_rate instead of size width * height. This follows from the idea that with supersampling, we now sample sample_rate times per pixel, so the sample buffer should store sample_rate color values for each pixel. After resizing and clearing the buffer each time the sample rate changes (to facilitate redrawing the scene when the sample rate is increased or decreased), we implement the supersampling algorithm. Similar to Task 1, we only check pixels within the triangle’s bounding box. However, now we now perform our three line tests at the granularity of one sample rather than one pixel. We first take the square root of sample_rate to determine the number of samples to take in each direction (denoted as num_blocks), and calculate the block size (block_size) as 1/num_blocks. Given these values, for each pixel, we iterate num_blocks times in both the x-direction (denoted as i) and the y-direction (denoted as j), calculating the center of each sample as (x + block_size * (i + 0.5), y + block_size * (j + 0.5)) . We then check if this sample center is inside the triangle. If so, we fill the sample buffer with the color passed into the function as an argument at the index (y * width + x) * sample_rate + i * num_blocks + j. Otherwise, we leave the sample buffer unchanged, letting it default to white. After filling the sample buffer, we modify the resolve_to_framebuffer function to average the sample_rate color values for each pixel and write the averaged red, green, and blue values to the framebuffer. This averaging allows the pixels to take intermediate color values, smoothing the edges. Additionally, we modify fill_pixel to store the same color for all supersamples of a pixel in the framebuffer, which is used for rasterizing points and lines.
+
+
+
+		As the sample rate increases, the pixels can take on more intermediate values between red and white, creating a blurring effect that smooths the edges of the red triangle and eliminates sharp jaggies in the image. This effect becomes more noticeable where there are sharp transitions, such as at the corners of the skinny red triangle, which can be seen more clearly in the pixel inspectors for each of the three sampling rates.
 
 		<h2>Task 3: Transforms</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		We wanted to make the cubeman jump in a split, so we rotated its left and right legs by 60 degrees. To ensure the leg blocks are aligned, we made sure the left and right leg blocks were collectively translated by (-90, 70) and (90, 70) respectively. We also translated the leg blocks to 70 pixels from the origin. To make the cubeman purple, we filled the polygons with different shades of purple: #C3B2C4 for the torso, #BFADC1 for the head, and #9B7F9D for the arms and legs.
+
+		<figure>
+			<img src="task3.png" alt="my robot" style="width:50%"/>
+			<figcaption>my_robot.svg</figcaption>
+		</figure>
 
 		<h2>Task 4: Barycentric coordinates</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Barycentric coordinates provide a coordinate system for triangles, allowing for the interpolation of values across the triangle’s surface. Interpolation enables smooth variation of values across the triangle based on the values at its vertices. These interpolated values can include positions, texture coordinates, colors, and more. 
+
+		For example, the image above was generated using an svg file that plots a single triangle with one red, one green, and one blue vertex. Using barycentric coordinates to linearly interpolate the color values across the triangle, we obtain a smooth gradient of colors across its 2D surface.
+
+		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute , , and  for the center of each sample using the following formula: 
+		
+		<figure>
+			<img src="task3.png" alt="barycentric formula" style="width:50%"/>
+			<figcaption> </figcaption>
+		</figure>
+
+		If alpha, beta, and gamma are all ≥ 0, we know that the sample center is inside the triangle, therefore we use the barycentric coordinates to compute the weighted average of the color values at the vertices as P = and assign the resulting color to the sample buffer. 
+
+		Some downstream applications of barycentric coordinates include linear interpolation across a triangle, texture mapping (interpolating u/v coordinates to determine the appropriate texture for a pixel), calculating proportional areas and distances, and determining whether a point lies inside a triangle.
 
 		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Pixel sampling is used for texture mapping, which is the task of assigning a pixel in screen space to the correct texture in texture space. We first convert the screen space coordinates to u/v coordinates, and then apply one of two different pixel sampling methods (nearest and bilinear) to determine the texture color at the calculated u/v coordinates. The color of the pixel in screen space is then set to the corresponding texture color. Our algorithm is leverages the algorithm from Task 4, where we iterate through each sample and compute , , and  for the center of each sample. If , , and  are all ≥ 0, we know that the sample center is inside the triangle. In this case, we use the barycentric coordinates to compute a weighted average of the u/v values at the vertices (as  P = ) to get the sample’s u/v coordinates. Using these u/v coordinates and the level 0 mipmap, we can apply either nearest or bilinear sampling to determine the correct texture to apply. For nearest sampling, we return the color of the texel closest to the calculated u/v coordinates, and that is the color that is assigned to the sample in the sample buffer. For bilinear sampling, we identify the four closest texels to the u/v coordinates, and then perform linear interpolation in both the x and y directions to effectively compute a weighted average of the four texel colors. The resulting color is assigned to the sample in the sample buffer. 
+
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		Level sampling is used to select the appropriate resolution level of a certain texture when rendering a 3D scene. It is done using mipmap levels, where a texture is sampled at different resolutions, with each level being a lower resolution than the original texture. A system determines which mipmap level to sample from by estimating the texture footprint using the texture coordinates of neighboring screen samples, using either nearest level sampling, trilinear filtering (blending between two adjacent mipmap levels), or anisotropic filtering (using the elliptical weight average to reduce blurriness and distortion).
+
+		For texture mapping, we implemented three types of level sampling. First, when lsm == L_ZERO, where we sampled from the highest resolution mipmap level. Then, L_NEAREST which computes the nearest appropriate mipmap level and samples from it, followed by L_LINEAR which computes a continuous mipmap level and blends between the two closest mipmap levels for smoother transitions (what we described as trilinear filtering in the previous passage).
+
+		To implement level sampling, we computed barycentric coordinates for the texture coordinates at three locations, the (x, y), (x+1, y), and (x, y+1). Then, we stored these values in a SampleParams struct and passed it into Texture::sample(sp) to determine the right mipmap level. In Texture::get_level, we computed texture differentials and scaled them based on the texture’s width and height. We computed L and D using the following equations:
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="task6_1.png" width="400px"/>
+				  <figcaption>L_ZERO, P_NEAREST</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="task6_2.png" width="400px"/>
+				  <figcaption>L_ZERO, P_LINEAR</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="task6_3.png" width="400px"/>
+				  <figcaption>L_NEAREST, P_NEAREST</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="task6_4.png" width="400px"/>
+				  <figcaption>L_NEAREST, P_LINEAR</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>(Optional) Task 7: Extra Credit - Draw Something Creative!</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		
 
 		<h2>Additional Notes (please remove)</h2>
 		<ul>
