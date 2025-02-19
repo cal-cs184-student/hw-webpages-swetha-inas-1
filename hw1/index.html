@@ -196,6 +196,15 @@
 
 		<p><i>Our Texture::sample(sp)</i> function called <i>Texture::get_level(sp)</i> to obtain the mipmap <i>level</i>. If <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_NEAREST</i>, we called <i>Texture::sample_nearest</i>, using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Similarly, if <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_LINEAR</i>, we called <i>Texture::sample_bilinear</i> using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Finally, for <i>L_LINEAR</i>, we called either <i>Texture::sample_nearest</i> or <i>Texture::sample_bilinear</i> for both the floor and ceiling of the returned <i>level</i>, depending on the value of <i>psm</i>. We then interpolated between these two samples and returned the final result.</p>
 
+		<p>When comparing pixel sampling, level sampling, and supersampling (which adjusts the number of samples per pixel), we observe that in terms of speed, pixel sampling is the fastest, supersampling is the slowest, and level sampling falls in between. This is because pixel sampling only requires checking a fixed number of texels at the highest resolution, ensuring fast performance. In contrast, level sampling incurs additional overhead from constructing different mipmaps on top of performing a specific pixel sampling technique. However, once the mipmaps are built, level sampling performs similarly to pixel sampling. Supersampling on the other hand requires sampling multiple times per pixel each time an image is rendered, which is a much slower process.</p>
+
+		<p>Pixel sampling requires the least memory, as it only stores the highest-resolution texture image. Level sampling requires more memory because it stores multiple resolutions of the same texture. Supersampling also requires a significant amount of memory to store all the pixel samples in the sample buffer. The exact memory requirements for level sampling and supersampling depend on the number of mipmap levels stored and the sampling rate.</p>
+
+		<p>In terms of anti-aliasing effectiveness, supersampling is the most powerful, as it samples pixels at a fine granularity, producing the smoothest results. Level sampling is a close second, as it reduces pixelation by utilizing lower-resolution texture images to create a smoother appearance. However, some pixelation may still be visible. Pixel sampling has the least anti-aliasing power as it does not produce a lot of blurring or color continuity on its own. However, when combined with level sampling, it produces a much smoother, blended image.</p>
+
+		<p>Below, we also provide speed, memory usage, and antialiasing power comparisons between different settings for each of the three techniques.</p>
+
+
 		<h3>Level Sampling Method</h3>
     <table>
         <tr>
