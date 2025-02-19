@@ -28,20 +28,15 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 1 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Swetha Rajkumar and Inas Zulaikha Anwar</div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/">https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/</a>
 		
 		<br>
 
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-
-		<figure>
-			<img src="lion.jpg" alt="Lion" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw1-swetha-inas/">https://github.com/cal-cs184-student/sp25-hw1-swetha-inas/</a>
 
 		<!--
 		We've already added one heading per task, to make your write-up as navigable when grading. Please fit your write-up within these sections!
@@ -50,48 +45,52 @@
 		<h2>Overview</h2>
 		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
-		<h2>Task 1: Drawing Single-Color Triangles</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		In this homework assignment, we implemented single-color triangle rasterization, supersampling, transformation functions, multi-colored triangle interpolation using barycentric coordinates, and texture mapping with pixel sampling and mipmap-based level sampling. We learned a lot about the importance of rasterization and how it is used in computer graphics to render scenes. We also learned about the significance of supersampling and how it can be used to improve the quality of images by reducing aliasing artifacts. Additionally, we learned about the importance of texture mapping and how it can be used to apply textures to objects in a scene. We implemented two different types of pixel sampling techniques, nearest and bilinear sampling, and used them to assign a pixel in screen space to the correct texture color in texture space. Finally, we implemented level sampling with mipmaps to select the appropriate resolution level of a texture when rendering a particular scene.
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-		<div style="display: flex; flex-direction: column; align-items: center;">
-			<table style="width: 100%; text-align: center; border-collapse: collapse;">
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-				<td style="text-align: center;">
-				  <img src="lion.jpg" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
-				</td>
-			  </tr>
-			</table>
-		</div>
+		<h2>Task 1: Drawing Single-Color Triangles</h2>
+		We rasterize triangles by iterating through every pixel within the triangle's bounding box and assigning it a specific color in the framebuffer based on whether it lies inside the triangle. Any pixel outside the bounding box is automatically considered outside the triangle, so its default white color in the framebuffer remains unchanged. To determine if a pixel is inside the triangle, we perform three line tests. For each test, we compute a line equation using a pair of triangle vertices and evaluate it at the pixel's center. We then multiply this result, Li(x,y), by winding, which represents the triangle's winding order—positive for counterclockwise order and negative for clockwise. If this computation yields a value less than zero for any of the three line tests, we consider the pixel to be outside the triangle. On the other hand, if this computation yields a value that is greater than or equal to zero for all three line tests, then the pixel is inside the triangle. If the pixel is inside the triangle, we assign it the color specified by the function argument in the framebuffer. Otherwise, we leave its default white color in the framebuffer unchanged. 
+
+		We determine the bounds of the triangle's bounding box using the minimum and maximum x and y coordinates among three vertices of the triangle. The top-left corner of the bounding box is (min x vertex coordinate, min y vertex coordinate), and the bottom-right corner is (max x vertex coordinate, max y vertex coordinate). This bounding box is the smallest rectangle that fully encloses the triangle as it ensures that at a minimum, all its vertices are contained within it. By definition, if all vertices lie within the bounding box, then all pixels inside the triangle must also be within it. Therefore, it is sufficient to check only the pixel samples within this bounding box, and that is how our rasterization algorithm is implemented.
+
+		<figure>
+			<img src="task3.png" alt="my robot" style="width:50%"/>
+			<figcaption>Cubeman doing splits</figcaption>
+		</figure>
 		
 		<h2>Task 2: Antialiasing by Supersampling</h2>
 		Supersampling is an approximation of 1-pixel box sampling and is useful for enabling anti-aliasing, which limits the effects of certain sampling artifacts like jaggies, false motion, and Moire. By taking multiple samples per pixel and averaging their color values, supersampling ensures the inclusion of intermediate colors, resulting in smoother transitions between pixels inside and outside the triangle and smoother edges overall. First, we resize the sample buffer to be of size width * height * sample_rate instead of size width * height. This follows from the idea that with supersampling, we now sample sample_rate times per pixel, so the sample buffer should store sample_rate color values for each pixel. After resizing and clearing the buffer each time the sample rate changes (to facilitate redrawing the scene when the sample rate is increased or decreased), we implement the supersampling algorithm. Similar to Task 1, we only check pixels within the triangle’s bounding box. However, now we now perform our three line tests at the granularity of one sample rather than one pixel. We first take the square root of sample_rate to determine the number of samples to take in each direction (denoted as num_blocks), and calculate the block size (block_size) as 1/num_blocks. Given these values, for each pixel, we iterate num_blocks times in both the x-direction (denoted as i) and the y-direction (denoted as j), calculating the center of each sample as (x + block_size * (i + 0.5), y + block_size * (j + 0.5)) . We then check if this sample center is inside the triangle. If so, we fill the sample buffer with the color passed into the function as an argument at the index (y * width + x) * sample_rate + i * num_blocks + j. Otherwise, we leave the sample buffer unchanged, letting it default to white. After filling the sample buffer, we modify the resolve_to_framebuffer function to average the sample_rate color values for each pixel and write the averaged red, green, and blue values to the framebuffer. This averaging allows the pixels to take intermediate color values, smoothing the edges. Additionally, we modify fill_pixel to store the same color for all supersamples of a pixel in the framebuffer, which is used for rasterizing points and lines.
 
-
-
 		As the sample rate increases, the pixels can take on more intermediate values between red and white, creating a blurring effect that smooths the edges of the red triangle and eliminates sharp jaggies in the image. This effect becomes more noticeable where there are sharp transitions, such as at the corners of the skinny red triangle, which can be seen more clearly in the pixel inspectors for each of the three sampling rates.
 
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="task2_1.png" width="400px"/>
+				  <figcaption>Sample Rate: 1</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="task2_2.png" width="400px"/>
+				  <figcaption>Sample Rate: 4</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="task2_3.png" width="400px"/>
+				  <figcaption>Sample Rate: 16</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
 		<h2>Task 3: Transforms</h2>
-		We wanted to make the cubeman jump in a split, so we rotated its left and right legs by 60 degrees. To ensure the leg blocks are aligned, we made sure the left and right leg blocks were collectively translated by (-90, 70) and (90, 70) respectively. We also translated the leg blocks to 70 pixels from the origin. To make the cubeman purple, we filled the polygons with different shades of purple: #C3B2C4 for the torso, #BFADC1 for the head, and #9B7F9D for the arms and legs.
+		We wanted to make the cubeman jump in a split, so we rotated its left and right legs by 60 degrees. To ensure the leg blocks are aligned, we made sure the left and right leg blocks were collectively translated by (-90, 70) and (90, 70) respectively. To make the cubeman purple, we filled the polygons with different shades of purple: #C3B2C4 for the torso, #BFADC1 for the head, and #9B7F9D for the arms and legs.
 
 		<figure>
 			<img src="task3.png" alt="my robot" style="width:50%"/>
-			<figcaption>my_robot.svg</figcaption>
+			<figcaption>Cubeman doing splits</figcaption>
 		</figure>
 
 		<h2>Task 4: Barycentric coordinates</h2>
@@ -99,10 +98,10 @@
 
 		For example, the image above was generated using an svg file that plots a single triangle with one red, one green, and one blue vertex. Using barycentric coordinates to linearly interpolate the color values across the triangle, we obtain a smooth gradient of colors across its 2D surface.
 
-		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute , , and  for the center of each sample using the following formula: 
-		
+		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute alpha, beta, and gamma for the center of each sample using the following formula: 
+
 		<figure>
-			<img src="task3.png" alt="barycentric formula" style="width:50%"/>
+			<img src="bary_eqn.png" alt="barycentric formula" style="width:50%"/>
 			<figcaption> </figcaption>
 		</figure>
 
@@ -125,30 +124,26 @@
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="./task6_1.png" width="400px"/>
+				  <img src="task6_1.png" width="400px"/>
 				  <figcaption>L_ZERO, P_NEAREST</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="./task6_2.png" width="400px"/>
+				  <img src="task6_2.png" width="400px"/>
 				  <figcaption>L_ZERO, P_LINEAR</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="./task6_3.png" width="400px"/>
+				  <img src="task6_3.png" width="400px"/>
 				  <figcaption>L_NEAREST, P_NEAREST</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="./task6_4.png" width="400px"/>
+				  <img src="task6_4.png" width="400px"/>
 				  <figcaption>L_NEAREST, P_LINEAR</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
-
-		<h2>(Optional) Task 7: Extra Credit - Draw Something Creative!</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-		
 
 		<h2>Additional Notes (please remove)</h2>
 		<ul>
