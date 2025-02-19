@@ -131,7 +131,7 @@
 			<figcaption> </figcaption>
 		</figure>
 
-        If &alpha;, &beta;, and &gamma; are all nonnegative, we know that the sample center is inside the triangle, therefore we use the barycentric coordinates to compute the weighted average of the color values at the vertices as <i>newColor = &alpha; * c0 + &beta; * c1, + &gamma; * c2</i> and assign the resulting color to the sample buffer. 
+        If &alpha;, &beta;, and &gamma; are all nonnegative, we know that the sample center is inside the triangle, therefore we use the barycentric coordinates to compute the weighted average of the color values at the vertices as <i>newColor = &alpha; * c0 + &beta; * c1 + &gamma; * c2</i> and assign the resulting color to the sample buffer. 
 		
 		<p></p>
 
@@ -149,9 +149,9 @@
 
 		<p>Our algorithm leverages the algorithm from Task 4, where we iterate through each sample and compute &alpha;, &beta;, and &gamma; for the center of each sample. If &alpha;, &beta;, and &gamma; are all nonnegative, we know that the sample center is inside the triangle. In this case, we use the barycentric coordinates to compute a weighted average of the u/v values at the vertices to get the sample's u/v coordinates as follows: </p>
 		<p></p>
-		<i>new_u = &alpha; * u0 + &beta; * u1, + &gamma; * u2</i>
+		<i>new_u = &alpha; * u0 + &beta; * u1 + &gamma; * u2</i>
 		<p></p>
-        <i>new_v = &alpha; * v0 + &beta; * v1, + &gamma; * v2</i>
+        <i>new_v = &alpha; * v0 + &beta; * v1 + &gamma; * v2</i>
 		<p> Using these u/v coordinates and the level 0 mipmap, we can apply either nearest or bilinear sampling to determine the correct texture to apply. For nearest sampling, we return the color of the texel closest to the calculated u/v coordinates, and that is the color that is assigned to the sample in the sample buffer. For bilinear sampling, we identify the four closest texels to the u/v coordinates, and then perform linear interpolation in both the x and y directions to effectively compute a weighted average of the four texel colors. The resulting color is assigned to the sample in the sample buffer. </p>
 		<p>Below are images of the UC Berkeley seal using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel. The image of the seal using nearest sampling appears more pixelated, which is especially noticeable in the letter "N" in "University." The sharp changes in pixel color make the character harder to decipher. In contrast, the image of the seal with bilinear sampling appears more blended, with smoother transitions between pixel colors, making the same "N" clearer. Supersampling with nearest sampling reduces pixelation to some extent, but supersampling with bilinear sampling produces an even smoother texture. Bilinear sampling minimizes pixelation by creating smoother transitions between texture colors through bilinear interpolation. This method assigns a pixel's color in screen space by averaging the colors of the four nearest texels in u/v space. As the image is magnified and sharp color transitions (high frequencies) become more prominent, pixelation from nearest sampling becomes more noticeable, whereas bilinear sampling produces smoother color gradients.</p>
 
@@ -207,20 +207,20 @@
         <tr>
             <td>L_ZERO</td>
             <td>Fastest - doesn't require any mipmap lookups</td>
-            <td>High - generates all textures at full resolution</td>
-            <td>Lowest - aliasing can be found in minified textures</td>
+            <td>Lower - only requires the full resolution texture image</td>
+            <td>Lowest - aliasing artifacts are clearly visible</td>
         </tr>
         <tr>
             <td>L_NEAREST</td>
-            <td>Average</td>
-            <td>Lower - uses only appropriate mipmap levels</td>
-            <td>Higher - less aliasing</td>
+            <td>Average - samples from the nearest mipmap level </td>
+            <td>Higher - requires storage of the texture at several resolution levels</td>
+            <td>Higher - adds more blurring and reduces pixelation</td>
         </tr>
         <tr>
             <td>L_LINEAR</td>
-            <td>Slowest - samples from two different mipmap levels</td>
-            <td>Lower - uses only appropriate mipmap levels</td>
-            <td>Highest - smooth transitions between mipmap levels</td>
+            <td>Slowest - samples from two different mipmap levels and interpolates these values</td>
+            <td>Higher - requires storage of the texture at several resolution levels</td>
+            <td>Highest - smoother color transitions in the image</td>
         </tr>
     </table>
 
@@ -234,15 +234,15 @@
         </tr>
         <tr>
             <td>P_NEAREST</td>
-            <td>Fastest - doesn't require any mipmap lookups</td>
-            <td>Low - only accesses one texel</td>
-            <td>Lowest - pixelation and jaggies visible</td>
+            <td>Faster - returns the color of the nearest texel</td>
+            <td>Low - accesses a constant number of texels (1)</td>
+            <td>Lower - image is very pixelated</td>
         </tr>
         <tr>
             <td>P_LINEAR</td>
-            <td>Blends 4 texels for each lookup</td>
-            <td>Low</td>
-            <td>Higher - smoother transitions</td>
+            <td>Slower - computes a weighted average of the four closest texel colors</td>
+            <td>Low - accesses a constant number of texels (4)</td>
+            <td>Higher - smoother transitions between different colors</td>
         </tr>
     </table>
 
@@ -256,25 +256,25 @@
         </tr>
         <tr>
             <td>1 per pixel</td>
-            <td>Fastest - less computation required</td>
-            <td>Lowest - only one texture sample</td>
-            <td>Lowest - aliasing can be found in detailed areas</td>
+            <td>Fastest - only 1 sample is evaluated per pixel</td>
+            <td>Lowest - only one color needs to be stored for each pixel</td>
+            <td>Lowest - jaggies and other aliasing artifacts are clearly visible</td>
         </tr>
         <tr>
             <td>4 per pixel</td>
-            <td>Slower - 4x texture reads</td>
-            <td>Higher - 4x more memory required</td>
-            <td>Average - reduces aliasing in edges</td>
+            <td>Slower - 4 samples are evaluated per pixel</td>
+            <td>Higher - four colors need to be stored for each pixel</td>
+            <td>Average - adds more blurring to the image</td>
         </tr>
         <tr>
             <td>9, 16, and more per pixel</td>
-            <td>Slowest - more computation required</td>
-            <td>Highest - more memory required</td>
-            <td>Highest - smooth transitions</td>
+            <td>Slowest - many samples are evaluated per pixel</td>
+            <td>Highest - many more colors need to be stored for each pixel</td>
+            <td>Highest - smoother color transitions and blending in the image</td>
         </tr>
     </table>
 	<p></p>
-	<p>Four versions of our chosen image (UC Berkeley view):</p>
+	<p>Below are four versions of our chosen image (UC Berkeley view) using different level sampling and pixel sampling combinations. We observed that with <i>L_ZERO</i> and <i>P_NEAREST</i>, the image appears highly pixelated as it uses the full-resolution image with nearest sampling. The pixel inspector shows that the bridge is particularly pixelated. When switching to <i>L_ZERO</i> and <i>P_LINEAR</i>, we noticed that while the shades of some individual pixels changed, there wasn't a significant difference in the overall image. This is because <i>L_ZERO</i> prevents the pixels from taking on many intermediate values, which limits the effect of the averaging done by <i>P_LINEAR</i>, leaving the image still quite pixelated. The pixel inspector confirms this, as there is still noticeable pixelation on the bridge. With <i>L_NEAREST</i> and <i>P_NEAREST</i>, we start to see more blurring, as we are now sampling from a lower-resolution texture map, although some pixelation remains. The pixel inspector shows that the bridge cable has disappeared, which results from applying the lower-resolution texture. Finally, with <i>L_NEAREST</i> and <i>P_LINEAR</i>, the image becomes fully smoothed and the colors are more blended. In the pixel inspector, the bridge cable is no longer visible, and the suspenders are also significantly blurred.</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
