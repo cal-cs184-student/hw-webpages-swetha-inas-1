@@ -153,6 +153,30 @@
 		<p> Using these u/v coordinates and the level 0 mipmap, we can apply either nearest or bilinear sampling to determine the correct texture to apply. For nearest sampling, we return the color of the texel closest to the calculated u/v coordinates, and that is the color that is assigned to the sample in the sample buffer. For bilinear sampling, we identify the four closest texels to the u/v coordinates, and then perform linear interpolation in both the x and y directions to effectively compute a weighted average of the four texel colors. The resulting color is assigned to the sample in the sample buffer. </p>
 		<p>Below are images of the UC Berkeley seal using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel. The image of the seal using nearest sampling appears more pixelated, which is especially noticeable in the letter "N" in "University." The sharp changes in pixel color make the character harder to decipher. In contrast, the image of the seal with bilinear sampling appears more blended, with smoother transitions between pixel colors, making the same "N" clearer. Supersampling with nearest sampling reduces pixelation to some extent, but supersampling with bilinear sampling produces an even smoother texture. Bilinear sampling minimizes pixelation by creating smoother transitions between texture colors through bilinear interpolation. This method assigns a pixel's color in screen space by averaging the colors of the four nearest texels in u/v space. As the image is magnified and sharp color transitions (high frequencies) become more prominent, pixelation from nearest sampling becomes more noticeable, whereas bilinear sampling produces smoother color gradients.</p>
 
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="nearest_1.png" width="400px"/>
+				  <figcaption>Nearest Sampling, 1 Sample Per Pixel</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="nearest_16.png" width="400px"/>
+				  <figcaption>Nearest Sampling, 16 Sample Per Pixel</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bilinear_1.png" width="400px"/>
+				  <figcaption>Bilinear Sampling, 1 Sample Per Pixel</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bilinear_16.png" width="400px"/>
+				  <figcaption>Bilinear Sampling, 16 Sample Per Pixel</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
 		Level sampling is used to select the appropriate resolution level of a certain texture when rendering a 3D scene. It is done using mipmap levels, where a texture is sampled at different resolutions, with each level being a lower resolution than the original texture. A system determines which mipmap level to sample from by estimating the texture footprint using the texture coordinates of neighboring screen samples, using either nearest level sampling, trilinear filtering (blending between two adjacent mipmap levels), or anisotropic filtering (using the elliptical weight average to reduce blurriness and distortion).
