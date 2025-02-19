@@ -196,7 +196,7 @@
 
 		<p><i>Our Texture::sample(sp)</i> function called <i>Texture::get_level(sp)</i> to obtain the mipmap <i>level</i>. If <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_NEAREST</i>, we called <i>Texture::sample_nearest</i>, using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Similarly, if <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_LINEAR</i>, we called <i>Texture::sample_bilinear</i> using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Finally, for <i>L_LINEAR</i>, we called either <i>Texture::sample_nearest</i> or <i>Texture::sample_bilinear</i> for both the floor and ceiling of the returned <i>level</i>, depending on the value of <i>psm</i>. We then interpolated between these two samples and returned the final result.</p>
 
-		<h2>Level Sampling Method</h2>
+		<h3>Level Sampling Method</h3>
     <table>
         <tr>
             <th>Level Sampling Method</th>
@@ -224,7 +224,7 @@
         </tr>
     </table>
 
-    <h2>Pixel Sampling Method</h2>
+    <h3>Pixel Sampling Method</h3>
     <table>
         <tr>
             <th>Pixel Sampling Method</th>
@@ -246,7 +246,7 @@
         </tr>
     </table>
 
-    <h2>Sampling Rate</h2>
+    <h3>Sampling Rate</h3>
     <table>
         <tr>
             <th>Sampling Rate</th>
