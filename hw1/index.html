@@ -179,18 +179,20 @@
 		</div>
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
-		Level sampling is used to select the appropriate resolution level of a certain texture when rendering a 3D scene. It is done using mipmap levels, where a texture is sampled at different resolutions, with each level being a lower resolution than the original texture. A system determines which mipmap level to sample from by estimating the texture footprint using the texture coordinates of neighboring screen samples, using either nearest level sampling, trilinear filtering (blending between two adjacent mipmap levels), or anisotropic filtering (using the elliptical weight average to reduce blurriness and distortion).
+		Level sampling is used to select the appropriate resolution level of a texture when rendering a 3D scene. This process utilizes mipmap levels, where a texture is sampled at different resolutions, with each level representing a progressively lower resolution than the original texture. The system determines which mipmap level to sample from by estimating the texture footprint using the texture coordinates of neighboring screen samples. This is achieved through one of three methods: nearest level sampling, trilinear filtering (which blends between two adjacent mipmap levels), or anisotropic filtering (which applies an elliptical weighted average to reduce blurriness and distortion).
 
-		For texture mapping, we implemented three types of level sampling. First, when lsm == L_ZERO, where we sampled from the highest resolution mipmap level. Then, L_NEAREST which computes the nearest appropriate mipmap level and samples from it, followed by L_LINEAR which computes a continuous mipmap level and blends between the two closest mipmap levels for smoother transitions (what we described as trilinear filtering in the previous passage).
+		<p>For texture mapping, we implemented three types of level sampling. First, when <i>lsm == L_ZERO</i>, the texture is sampled from the highest resolution mipmap level. Next, <i>L_NEAREST</i> computes the nearest appropriate mipmap level and samples from it. Finally, <i>L_LINEAR</i> computes a continuous mipmap level and performs linear interpolation between the samples of the two closest mipmap levels. This corresponds to trilinear filtering, as described earlier. Depending on the <i>psm</i> value, we obtain samples either through nearest sampling or bilinear sampling.</p>
 
-		<p>To implement level sampling, we computed barycentric coordinates for the texture coordinates at three locations, the (x, y), (x+1, y), and (x, y+1). Then, we stored these values in a SampleParams struct and passed it into Texture::sample(sp) to determine the right mipmap level. In Texture::get_level, we computed texture differentials and scaled them based on the texture’s width and height. We computed L and D using the following equations:</p>
+		<p>To implement level sampling in Task 6, we computed barycentric coordinates for the texture coordinates at three sample locations: <i>(x,y)(x,y), (x+1,y)(x+1,y), and (x,y+1)(x,y+1)</i>. These values were stored in a <i>SampleParams</i> struct and passed into <i>Texture::sample(sp)</i> to determine the correct mipmap level. Within <i>Texture::get_level(sp)</i>, we computed the difference vectors and scaled them by the width and height of the full-resolution texture image to obtain <i>du/dx, dv/dx, du/dy, and dv/dy</i>. We then computed <i>L</i> and <i>D</i> using the following equations:</p>
 
 		<figure>
 			<img src="d_eqn.png" alt="D and L equations" style="width:50%"/>
 			<figcaption> </figcaption>
 		</figure>
 
-		And then returned the correct mipmap level based on the lsm setting. We then called get_level(sp) in Texture::sample to determine the mipmap level to sample from, using the three different methods.
+		<p>For <i>L_ZERO</i>, our get_level function returned 0. For <i>L_NEAREST</i>, we rounded <i>D</i> to the nearest integer and returned that value. For <i>L_LINEAR</i>, we returned <i>D</i> as the float value we computed.</p>
+
+		<p><i>Our Texture::sample(sp)</i> function called <i>Texture::get_level(sp)</i> to obtain the mipmap <i>level</i>. If <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_NEAREST</i>, we called <i>Texture::sample_nearest</i>, using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Similarly, if <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_LINEAR</i>, we called <i>Texture::sample_bilinear</i> using the <i>sp</i> struct's <i>p_uv</i> value and the <i>level</i> converted to an integer, then returned this sample. Finally, for <i>L_LINEAR</i>, we called either <i>Texture::sample_nearest</i> or <i>Texture::sample_bilinear</i> for both the floor and ceiling of the returned <i>level</i>, depending on the value of <i>psm</i>. We then interpolated between these two samples and returned the final result.</p>
 
 		<h2>Level Sampling Method</h2>
     <table>
@@ -202,21 +204,21 @@
         </tr>
         <tr>
             <td>L_ZERO</td>
-            <td>Fastest – doesn’t require any mipmap lookups</td>
-            <td>High – generates all textures at full resolution</td>
-            <td>Lowest – aliasing can be found in minified textures</td>
+            <td>Fastest - doesn't require any mipmap lookups</td>
+            <td>High - generates all textures at full resolution</td>
+            <td>Lowest - aliasing can be found in minified textures</td>
         </tr>
         <tr>
             <td>L_NEAREST</td>
             <td>Average</td>
-            <td>Lower – uses only appropriate mipmap levels</td>
-            <td>Higher – less aliasing</td>
+            <td>Lower - uses only appropriate mipmap levels</td>
+            <td>Higher - less aliasing</td>
         </tr>
         <tr>
             <td>L_LINEAR</td>
-            <td>Slowest – samples from two different mipmap levels</td>
-            <td>Lower – uses only appropriate mipmap levels</td>
-            <td>Highest – smooth transitions between mipmap levels</td>
+            <td>Slowest - samples from two different mipmap levels</td>
+            <td>Lower - uses only appropriate mipmap levels</td>
+            <td>Highest - smooth transitions between mipmap levels</td>
         </tr>
     </table>
 
@@ -230,15 +232,15 @@
         </tr>
         <tr>
             <td>P_NEAREST</td>
-            <td>Fastest – doesn’t require any mipmap lookups</td>
-            <td>Low – only accesses one texel</td>
-            <td>Lowest – pixelation and jaggies visible</td>
+            <td>Fastest - doesn't require any mipmap lookups</td>
+            <td>Low - only accesses one texel</td>
+            <td>Lowest - pixelation and jaggies visible</td>
         </tr>
         <tr>
             <td>P_LINEAR</td>
             <td>Blends 4 texels for each lookup</td>
             <td>Low</td>
-            <td>Higher – smoother transitions</td>
+            <td>Higher - smoother transitions</td>
         </tr>
     </table>
 
@@ -252,25 +254,25 @@
         </tr>
         <tr>
             <td>1 per pixel</td>
-            <td>Fastest – less computation required</td>
-            <td>Lowest – only one texture sample</td>
-            <td>Lowest – aliasing can be found in detailed areas</td>
+            <td>Fastest - less computation required</td>
+            <td>Lowest - only one texture sample</td>
+            <td>Lowest - aliasing can be found in detailed areas</td>
         </tr>
         <tr>
             <td>4 per pixel</td>
-            <td>Slower – 4x texture reads</td>
-            <td>Higher – 4x more memory required</td>
-            <td>Average – reduces aliasing in edges</td>
+            <td>Slower - 4x texture reads</td>
+            <td>Higher - 4x more memory required</td>
+            <td>Average - reduces aliasing in edges</td>
         </tr>
         <tr>
             <td>9, 16, and more per pixel</td>
-            <td>Slowest – more computation required</td>
-            <td>Highest – more memory required</td>
-            <td>Highest – smooth transitions</td>
+            <td>Slowest - more computation required</td>
+            <td>Highest - more memory required</td>
+            <td>Highest - smooth transitions</td>
         </tr>
     </table>
 	<p></p>
-	<p>Four versions of the image:</p>
+	<p>Four versions of our chosen image (UC Berkeley view):</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
