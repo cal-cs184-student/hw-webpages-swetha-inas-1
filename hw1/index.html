@@ -23,6 +23,19 @@
 			body {
 				font-family: 'Inter', sans-serif;
 			}
+
+			table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid black;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
 		</style>
 	</head>
 	<body>
@@ -43,24 +56,27 @@
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
-		In this homework assignment, we implemented single-color triangle rasterization, supersampling, transformation functions, multi-colored triangle interpolation using barycentric coordinates, and texture mapping with pixel sampling and mipmap-based level sampling. We learned a lot about the importance of rasterization and how it is used in computer graphics to render scenes. We also learned about the significance of supersampling and how it can be used to improve the quality of images by reducing aliasing artifacts. Additionally, we learned about the importance of texture mapping and how it can be used to apply textures to objects in a scene. We implemented two different types of pixel sampling techniques, nearest and bilinear sampling, and used them to assign a pixel in screen space to the correct texture color in texture space. Finally, we implemented level sampling with mipmaps to select the appropriate resolution level of a texture when rendering a particular scene.
+		In this homework assignment, we implemented single-color triangle rasterization, supersampling, transformation functions, multi-colored triangle interpolation using barycentric coordinates, and texture mapping with pixel sampling and mipmap-based level sampling. We learned how rasterization is used in computer graphics to assign values from a continuous scene to individual pixels. We also learned about the significance of supersampling and how it can be used to improve the quality of images by reducing aliasing artifacts. Additionally, we learned about how pixel sampling and level sampling can be used to apply textures to objects in a scene. We implemented two different types of pixel sampling techniques, nearest and bilinear sampling, and used them to assign a pixel in screen space to the correct texture color in texture space. Finally, we implemented level sampling with mipmaps to select the appropriate resolution level of a texture when rendering a particular scene.
 
 		<h2>Task 1: Drawing Single-Color Triangles</h2>
-		We rasterize triangles by iterating through every pixel within the triangle's bounding box and assigning it a specific color in the framebuffer based on whether it lies inside the triangle. Any pixel outside the bounding box is automatically considered outside the triangle, so its default white color in the framebuffer remains unchanged. To determine if a pixel is inside the triangle, we perform three line tests. For each test, we compute a line equation using a pair of triangle vertices and evaluate it at the pixel's center. We then multiply this result, Li(x,y), by winding, which represents the triangle's winding order—positive for counterclockwise order and negative for clockwise. If this computation yields a value less than zero for any of the three line tests, we consider the pixel to be outside the triangle. On the other hand, if this computation yields a value that is greater than or equal to zero for all three line tests, then the pixel is inside the triangle. If the pixel is inside the triangle, we assign it the color specified by the function argument in the framebuffer. Otherwise, we leave its default white color in the framebuffer unchanged. 
+		We rasterize triangles by iterating through every pixel within the triangle's bounding box and assigning it a specific color in the framebuffer based on whether it lies inside the triangle. Any pixel outside the bounding box is automatically considered outside the triangle, so its default white color in the framebuffer remains unchanged. To determine if a pixel is inside the triangle, we perform three line tests. For each test, we compute a line equation using a pair of triangle vertices and evaluate it at the pixel's center. We then multiply this result, Li(x,y), by winding, which represents the triangle's winding order (positive for counterclockwise order and negative for clockwise). If this computation yields a value less than zero for any of the three line tests, we consider the pixel to be outside the triangle. On the other hand, if this computation yields a value that is greater than or equal to zero for all three line tests, then the pixel is inside the triangle. If the pixel is inside the triangle, we assign it the color specified by the function argument in the framebuffer. Otherwise, we leave its default white color in the framebuffer unchanged.
+		<p></p>
+		
+		We determine the bounds of the triangle's bounding box using the minimum and maximum x and y coordinates among the three vertices of the triangle. The top-left corner of the bounding box is (min x vertex coordinate, min y vertex coordinate), and the bottom-right corner is (max x vertex coordinate, max y vertex coordinate). This bounding box is the smallest rectangle that fully encloses the triangle as it ensures that at a minimum, all its vertices are contained within it. By definition, if all vertices lie within the bounding box, then all pixels inside the triangle must also be within it. Therefore, it is sufficient to check only the pixel samples within this bounding box, and that is how our rasterization algorithm is implemented.
 
-		We determine the bounds of the triangle's bounding box using the minimum and maximum x and y coordinates among three vertices of the triangle. The top-left corner of the bounding box is (min x vertex coordinate, min y vertex coordinate), and the bottom-right corner is (max x vertex coordinate, max y vertex coordinate). This bounding box is the smallest rectangle that fully encloses the triangle as it ensures that at a minimum, all its vertices are contained within it. By definition, if all vertices lie within the bounding box, then all pixels inside the triangle must also be within it. Therefore, it is sufficient to check only the pixel samples within this bounding box, and that is how our rasterization algorithm is implemented.
+		<p></p>
 
 		<figure>
-			<img src="task3.png" alt="my robot" style="width:50%"/>
-			<figcaption>Cubeman doing splits</figcaption>
+			<img src="task2_1.png" alt="single color triangle" style="width:50%"/>
+			<figcaption>test4.svg</figcaption>
 		</figure>
 		
 		<h2>Task 2: Antialiasing by Supersampling</h2>
-		Supersampling is an approximation of 1-pixel box sampling and is useful for enabling anti-aliasing, which limits the effects of certain sampling artifacts like jaggies, false motion, and Moire. By taking multiple samples per pixel and averaging their color values, supersampling ensures the inclusion of intermediate colors, resulting in smoother transitions between pixels inside and outside the triangle and smoother edges overall. First, we resize the sample buffer to be of size width * height * sample_rate instead of size width * height. This follows from the idea that with supersampling, we now sample sample_rate times per pixel, so the sample buffer should store sample_rate color values for each pixel. After resizing and clearing the buffer each time the sample rate changes (to facilitate redrawing the scene when the sample rate is increased or decreased), we implement the supersampling algorithm. Similar to Task 1, we only check pixels within the triangle’s bounding box. However, now we now perform our three line tests at the granularity of one sample rather than one pixel. We first take the square root of sample_rate to determine the number of samples to take in each direction (denoted as num_blocks), and calculate the block size (block_size) as 1/num_blocks. Given these values, for each pixel, we iterate num_blocks times in both the x-direction (denoted as i) and the y-direction (denoted as j), calculating the center of each sample as (x + block_size * (i + 0.5), y + block_size * (j + 0.5)) . We then check if this sample center is inside the triangle. If so, we fill the sample buffer with the color passed into the function as an argument at the index (y * width + x) * sample_rate + i * num_blocks + j. Otherwise, we leave the sample buffer unchanged, letting it default to white. After filling the sample buffer, we modify the resolve_to_framebuffer function to average the sample_rate color values for each pixel and write the averaged red, green, and blue values to the framebuffer. This averaging allows the pixels to take intermediate color values, smoothing the edges. Additionally, we modify fill_pixel to store the same color for all supersamples of a pixel in the framebuffer, which is used for rasterizing points and lines.
-
-		As the sample rate increases, the pixels can take on more intermediate values between red and white, creating a blurring effect that smooths the edges of the red triangle and eliminates sharp jaggies in the image. This effect becomes more noticeable where there are sharp transitions, such as at the corners of the skinny red triangle, which can be seen more clearly in the pixel inspectors for each of the three sampling rates.
+		Supersampling is an approximation of 1-pixel box sampling and is useful for enabling anti-aliasing, which limits the effects of certain sampling artifacts like jaggies, false motion, and Moire. By taking multiple samples per pixel and averaging their color values, supersampling ensures the inclusion of intermediate colors, resulting in smoother transitions between pixels inside and outside the triangle and smoother edges overall. First, we resize the sample buffer to be of size <i>width * height * sample_rate</i> instead of size <i>width * height</i>. This follows from the idea that with supersampling, we now sample <i>sample_rate</i> times per pixel, so the sample buffer should store <i>sample_rate</i> color values for each pixel. After resizing and clearing the buffer each time the sample rate changes (to facilitate redrawing the scene when the sample rate is increased or decreased), we implement the supersampling algorithm. Similar to Task 1, we only check pixels within the triangle's bounding box. However, now we now perform our three line tests at the granularity of one sample rather than one pixel. We first take the square root of <i>sample_rate</i> to determine the number of samples to take in each direction (denoted as <i>num_blocks</i>), and calculate the block size (<i>block_size</i>) as <i>1/num_blocks</i>. Given these values, for each pixel, we iterate <i>num_blocks</i> times in both the x-direction (denoted as i) and the y-direction (denoted as j), calculating the center of each sample as <i>(x + block_size * (i + 0.5), y + block_size * (j + 0.5))</i> . We then check if this sample center is inside the triangle. If so, we set the value of the color at index <i>(y * width + x) * sample_rate + i * num_blocks + j</i> in the sample buffer to be the color specified by the function argument. Otherwise, we leave the color in the sample buffer at that index unchanged, letting it default to white. After filling the sample buffer, we modify the <i>resolve_to_framebuffer</i> function to average the <i>sample_rate</i> color values for each pixel and write the averaged red, green, and blue values to the framebuffer. This averaging allows the pixels to take intermediate color values, smoothing the edges. Additionally, we modify <i>fill_pixel</i> to store the same color for all supersamples of a pixel in the framebuffer, which is used for rasterizing points and lines.
+		<p></p>
+        As the sample rate increases, the pixels can take on more intermediate values between red and white, creating a blurring effect that smooths the edges of the red triangle and eliminates sharp jaggies in the image. This effect becomes more noticeable where there are sharp transitions, such as at the corners of the skinny red triangle, which can be seen more clearly in the pixel inspectors for each of the three sampling rates.
+		<p></p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
@@ -86,31 +102,56 @@
 		</div>
 
 		<h2>Task 3: Transforms</h2>
-		We wanted to make the cubeman jump in a split, so we rotated its left and right legs by 60 degrees. To ensure the leg blocks are aligned, we made sure the left and right leg blocks were collectively translated by (-90, 70) and (90, 70) respectively. To make the cubeman purple, we filled the polygons with different shades of purple: #C3B2C4 for the torso, #BFADC1 for the head, and #9B7F9D for the arms and legs.
-
+		We wanted to make the cubeman perform a split jump, so we rotated its left and right legs by 60 degrees. To ensure proper alignment, we translated the left and right leg blocks by (-90, 70) and (90, 70), respectively. To give the cubeman a purple appearance, we filled the polygons with different shades: #C3B2C4 for the torso, #BFADC1 for the head, and #9B7F9D for the arms and legs.
 		<figure>
-			<img src="task3.png" alt="my robot" style="width:50%"/>
-			<figcaption>Cubeman doing splits</figcaption>
+			<img src="my_robot.png" alt="my robot" style="width:50%"/>
+			<figcaption>Cubeman doing splits!</figcaption>
 		</figure>
 
 		<h2>Task 4: Barycentric coordinates</h2>
-		Barycentric coordinates provide a coordinate system for triangles, allowing for the interpolation of values across the triangle’s surface. Interpolation enables smooth variation of values across the triangle based on the values at its vertices. These interpolated values can include positions, texture coordinates, colors, and more. 
+		Barycentric coordinates provide a coordinate system for triangles, allowing for the interpolation of values across the triangle's surface. Interpolation enables smooth variation of values across the triangle based on the values at its vertices. These interpolated values can include positions, texture coordinates, colors, and more. 
+		
+		<figure>
+			<img src="task4_triangle.png" alt="triangle" style="width:50%"/>
+			<figcaption>Smoothly blended color triangle.</figcaption>
+		</figure>
 
-		For example, the image above was generated using an svg file that plots a single triangle with one red, one green, and one blue vertex. Using barycentric coordinates to linearly interpolate the color values across the triangle, we obtain a smooth gradient of colors across its 2D surface.
+		For example, the image above was generated using an svg file that plots a single triangle with one red, one green, and one blue vertex. Using barycentric coordinates to linearly interpolate the color values across the triangle, we obtained a smooth gradient of colors across its 2D surface.
 
-		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute alpha, beta, and gamma for the center of each sample using the following formula: 
+		<p></p>
+
+		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute &alpha;, &beta;, and &gamma; for the center of each sample using the following formula: 
+
+		<p></p>
 
 		<figure>
 			<img src="bary_eqn.png" alt="barycentric formula" style="width:50%"/>
 			<figcaption> </figcaption>
 		</figure>
 
-		If alpha, beta, and gamma are all ≥ 0, we know that the sample center is inside the triangle, therefore we use the barycentric coordinates to compute the weighted average of the color values at the vertices as P = and assign the resulting color to the sample buffer. 
+        If &alpha;, &beta;, and &gamma; are all nonnegative, we know that the sample center is inside the triangle, therefore we use the barycentric coordinates to compute the weighted average of the color values at the vertices as <i>newColor = &alpha; * c0 + &beta; * c1, + &gamma; * c2</i> and assign the resulting color to the sample buffer. 
+		
+		<p></p>
 
-		Some downstream applications of barycentric coordinates include linear interpolation across a triangle, texture mapping (interpolating u/v coordinates to determine the appropriate texture for a pixel), calculating proportional areas and distances, and determining whether a point lies inside a triangle.
+        Some downstream applications of barycentric coordinates include linear interpolation across a triangle, texture mapping (interpolating u/v coordinates to determine the appropriate texture for a pixel), calculating proportional areas and distances, and determining whether a point lies inside a triangle.	
+        
+		Below is a color wheel generated using barycentric coordinates with default viewing parameters and a sample rate of 1.
+
+		<figure>
+			<img src="task4_test7.png" alt="color wheel" style="width:50%"/>
+			<figcaption>test7.svg: Color Wheel</figcaption>
+		</figure>
 
 		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Pixel sampling is used for texture mapping, which is the task of assigning a pixel in screen space to the correct texture in texture space. We first convert the screen space coordinates to u/v coordinates, and then apply one of two different pixel sampling methods (nearest and bilinear) to determine the texture color at the calculated u/v coordinates. The color of the pixel in screen space is then set to the corresponding texture color. Our algorithm is leverages the algorithm from Task 4, where we iterate through each sample and compute , , and  for the center of each sample. If , , and  are all ≥ 0, we know that the sample center is inside the triangle. In this case, we use the barycentric coordinates to compute a weighted average of the u/v values at the vertices (as  P = ) to get the sample’s u/v coordinates. Using these u/v coordinates and the level 0 mipmap, we can apply either nearest or bilinear sampling to determine the correct texture to apply. For nearest sampling, we return the color of the texel closest to the calculated u/v coordinates, and that is the color that is assigned to the sample in the sample buffer. For bilinear sampling, we identify the four closest texels to the u/v coordinates, and then perform linear interpolation in both the x and y directions to effectively compute a weighted average of the four texel colors. The resulting color is assigned to the sample in the sample buffer. 
+		Pixel sampling is used for texture mapping, which is the task of assigning a pixel in screen space to the correct texture in texture space. We first convert the screen space coordinates to u/v coordinates, and then apply one of two different pixel sampling methods (nearest and bilinear) to determine the texture color at the calculated u/v coordinates. The color of the pixel in screen space is then set to the corresponding texture color.
+
+		<p>Our algorithm leverages the algorithm from Task 4, where we iterate through each sample and compute &alpha;, &beta;, and &gamma; for the center of each sample. If &alpha;, &beta;, and &gamma; are all nonnegative, we know that the sample center is inside the triangle. In this case, we use the barycentric coordinates to compute a weighted average of the u/v values at the vertices to get the sample's u/v coordinates as follows: </p>
+		<p></p>
+		<i>new_u = &alpha; * u0 + &beta; * u1, + &gamma; * u2</i>
+		<p></p>
+        <i>new_v = &alpha; * v0 + &beta; * v1, + &gamma; * v2</i>
+		<p> Using these u/v coordinates and the level 0 mipmap, we can apply either nearest or bilinear sampling to determine the correct texture to apply. For nearest sampling, we return the color of the texel closest to the calculated u/v coordinates, and that is the color that is assigned to the sample in the sample buffer. For bilinear sampling, we identify the four closest texels to the u/v coordinates, and then perform linear interpolation in both the x and y directions to effectively compute a weighted average of the four texel colors. The resulting color is assigned to the sample in the sample buffer. </p>
+		<p>Below are images of the UC Berkeley seal using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel. The image of the seal using nearest sampling appears more pixelated, which is especially noticeable in the letter "N" in "University." The sharp changes in pixel color make the character harder to decipher. In contrast, the image of the seal with bilinear sampling appears more blended, with smoother transitions between pixel colors, making the same "N" clearer. Supersampling with nearest sampling reduces pixelation to some extent, but supersampling with bilinear sampling produces an even smoother texture. Bilinear sampling minimizes pixelation by creating smoother transitions between texture colors through bilinear interpolation. This method assigns a pixel's color in screen space by averaging the colors of the four nearest texels in u/v space. As the image is magnified and sharp color transitions (high frequencies) become more prominent, pixelation from nearest sampling becomes more noticeable, whereas bilinear sampling produces smoother color gradients.</p>
 
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
@@ -118,7 +159,94 @@
 
 		For texture mapping, we implemented three types of level sampling. First, when lsm == L_ZERO, where we sampled from the highest resolution mipmap level. Then, L_NEAREST which computes the nearest appropriate mipmap level and samples from it, followed by L_LINEAR which computes a continuous mipmap level and blends between the two closest mipmap levels for smoother transitions (what we described as trilinear filtering in the previous passage).
 
-		To implement level sampling, we computed barycentric coordinates for the texture coordinates at three locations, the (x, y), (x+1, y), and (x, y+1). Then, we stored these values in a SampleParams struct and passed it into Texture::sample(sp) to determine the right mipmap level. In Texture::get_level, we computed texture differentials and scaled them based on the texture’s width and height. We computed L and D using the following equations:
+		<p>To implement level sampling, we computed barycentric coordinates for the texture coordinates at three locations, the (x, y), (x+1, y), and (x, y+1). Then, we stored these values in a SampleParams struct and passed it into Texture::sample(sp) to determine the right mipmap level. In Texture::get_level, we computed texture differentials and scaled them based on the texture’s width and height. We computed L and D using the following equations:</p>
+
+		<figure>
+			<img src="d_eqn.png" alt="D and L equations" style="width:50%"/>
+			<figcaption> </figcaption>
+		</figure>
+
+		And then returned the correct mipmap level based on the lsm setting. We then called get_level(sp) in Texture::sample to determine the mipmap level to sample from, using the three different methods.
+
+		<h2>Level Sampling Method</h2>
+    <table>
+        <tr>
+            <th>Level Sampling Method</th>
+            <th>Speed</th>
+            <th>Memory Usage</th>
+            <th>Antialiasing Power</th>
+        </tr>
+        <tr>
+            <td>L_ZERO</td>
+            <td>Fastest – doesn’t require any mipmap lookups</td>
+            <td>High – generates all textures at full resolution</td>
+            <td>Lowest – aliasing can be found in minified textures</td>
+        </tr>
+        <tr>
+            <td>L_NEAREST</td>
+            <td>Average</td>
+            <td>Lower – uses only appropriate mipmap levels</td>
+            <td>Higher – less aliasing</td>
+        </tr>
+        <tr>
+            <td>L_LINEAR</td>
+            <td>Slowest – samples from two different mipmap levels</td>
+            <td>Lower – uses only appropriate mipmap levels</td>
+            <td>Highest – smooth transitions between mipmap levels</td>
+        </tr>
+    </table>
+
+    <h2>Pixel Sampling Method</h2>
+    <table>
+        <tr>
+            <th>Pixel Sampling Method</th>
+            <th>Speed</th>
+            <th>Memory Usage</th>
+            <th>Antialiasing Power</th>
+        </tr>
+        <tr>
+            <td>P_NEAREST</td>
+            <td>Fastest – doesn’t require any mipmap lookups</td>
+            <td>Low – only accesses one texel</td>
+            <td>Lowest – pixelation and jaggies visible</td>
+        </tr>
+        <tr>
+            <td>P_LINEAR</td>
+            <td>Blends 4 texels for each lookup</td>
+            <td>Low</td>
+            <td>Higher – smoother transitions</td>
+        </tr>
+    </table>
+
+    <h2>Sampling Rate</h2>
+    <table>
+        <tr>
+            <th>Sampling Rate</th>
+            <th>Speed</th>
+            <th>Memory Usage</th>
+            <th>Antialiasing Power</th>
+        </tr>
+        <tr>
+            <td>1 per pixel</td>
+            <td>Fastest – less computation required</td>
+            <td>Lowest – only one texture sample</td>
+            <td>Lowest – aliasing can be found in detailed areas</td>
+        </tr>
+        <tr>
+            <td>4 per pixel</td>
+            <td>Slower – 4x texture reads</td>
+            <td>Higher – 4x more memory required</td>
+            <td>Average – reduces aliasing in edges</td>
+        </tr>
+        <tr>
+            <td>9, 16, and more per pixel</td>
+            <td>Slowest – more computation required</td>
+            <td>Highest – more memory required</td>
+            <td>Highest – smooth transitions</td>
+        </tr>
+    </table>
+	<p></p>
+	<p>Four versions of the image:</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
