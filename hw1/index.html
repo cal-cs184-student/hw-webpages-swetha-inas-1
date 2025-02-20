@@ -122,7 +122,7 @@
 
 		<p></p>
 
-		For task #4, our algorithm works as follows: We iterate through each sample (similar to Task #2) and compute &alpha;, &beta;, and &gamma; for the center of each sample using the following formula: 
+		For Task 4, our algorithm works as follows: We iterate through each sample (similar to Task 2) and compute &alpha;, &beta;, and &gamma; for the center of each sample using the following formula: 
 
 		<p></p>
 
@@ -194,7 +194,7 @@
 
 		<p>For <i>L_ZERO</i>, our <i>Texture::get_level(sp)</i> simply returned 0. For <i>L_NEAREST</i>, we rounded <i>D</i> to the nearest integer and returned that value. For <i>L_LINEAR</i>, we returned <i>D</i> as the float value we computed.</p>
 
-		<p>After obtaining the appropriate mipmap level to sample from, our <i>Our Texture::sample(sp)</i> was implemented as follows: If <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_NEAREST</i>, we called <i>Texture::sample_nearest</i> with the <i>p_uv</i> value from the <i>sp</i> struct and the <i>level</i> converted to an integer, then returned the resulting sample. Similarly, if <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_LINEAR</i>, we called <i>Texture::sample_bilinear</i> with the <i>p_uv value</i> from the <i>sp</i> struct and the <i>level</i> converted to an integer, then returned the resulting sample. Finally, for <i>lsm == L_LINEAR</i>, we called either <i>Texture::sample_nearest</i> or <i>Texture::sample_bilinear</i> for both the floor and ceiling of the returned <i>level</i> depending on the value of <i>psm</i>. We then interpolated between these two samples and returned the final result.</p>
+		<p>After obtaining the appropriate mipmap level to sample from, our <i>Texture::sample(sp)</i> was implemented as follows: If <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_NEAREST</i>, we called <i>Texture::sample_nearest</i> with the <i>p_uv</i> value from the <i>sp</i> struct and the <i>level</i> converted to an integer, then returned the resulting sample. Similarly, if <i>lsm</i> was not <i>L_LINEAR</i> and <i>psm</i> was <i>P_LINEAR</i>, we called <i>Texture::sample_bilinear</i> with the <i>p_uv value</i> from the <i>sp</i> struct and the <i>level</i> converted to an integer, then returned the resulting sample. Finally, for <i>lsm == L_LINEAR</i>, we called either <i>Texture::sample_nearest</i> or <i>Texture::sample_bilinear</i> for both the floor and ceiling of the returned <i>level</i> depending on the value of <i>psm</i>. We then interpolated between these two samples and returned the final result.</p>
 
 		<p>When comparing pixel sampling, level sampling, and supersampling (which adjusts the number of samples per pixel), we observe that in terms of speed, pixel sampling is the fastest, supersampling is the slowest, and level sampling falls in between. This is because pixel sampling only requires checking a fixed number of texels at the highest resolution, which is a fast computation. In contrast, level sampling incurs additional overhead from constructing different mipmaps on top of performing a specific pixel sampling technique. However, once the mipmaps are built, level sampling performs similarly to pixel sampling. Supersampling on the other hand requires sampling multiple times per pixel each time an image is rendered, which is a much slower process.</p>
 
@@ -215,21 +215,21 @@
         </tr>
         <tr>
             <td>L_ZERO</td>
-            <td>Fastest - doesn't require any mipmap lookups</td>
-            <td>Lower - only requires the full resolution texture image</td>
-            <td>Lowest - aliasing artifacts are clearly visible</td>
+            <td>Fast - samples from the level 0 mipmap</td>
+            <td>Low - only requires the full resolution texture image</td>
+            <td>Low - aliasing artifacts are clearly visible</td>
         </tr>
         <tr>
             <td>L_NEAREST</td>
-            <td>Average - samples from the nearest mipmap level </td>
-            <td>Higher - requires storage of the texture at several resolution levels</td>
-            <td>Higher - adds more blurring and reduces pixelation</td>
+            <td>Fast - samples from the nearest mipmap level</td>
+            <td>High - requires storage of the texture at several resolution levels</td>
+            <td>Average - adds more blurring and reduces pixelation</td>
         </tr>
         <tr>
             <td>L_LINEAR</td>
-            <td>Slowest - samples from two different mipmap levels and interpolates these values</td>
-            <td>Higher - requires storage of the texture at several resolution levels</td>
-            <td>Highest - smoother color transitions in the image</td>
+            <td>Fairly fast - samples from two different mipmap levels and interpolates these values</td>
+            <td>High - requires storage of the texture at several resolution levels</td>
+            <td>High - smoother color transitions in the image</td>
         </tr>
     </table>
 
@@ -243,15 +243,15 @@
         </tr>
         <tr>
             <td>P_NEAREST</td>
-            <td>Faster - returns the color of the nearest texel</td>
+            <td>Fast - returns the color of the nearest texel</td>
             <td>Low - accesses a constant number of texels (1)</td>
-            <td>Lower - image is very pixelated</td>
+            <td>Low - image is very pixelated</td>
         </tr>
         <tr>
             <td>P_LINEAR</td>
-            <td>Slower - computes a weighted average of the four closest texel colors</td>
+            <td>Fairly fast - computes a weighted average of the four closest texel colors</td>
             <td>Low - accesses a constant number of texels (4)</td>
-            <td>Higher - smoother transitions between different colors</td>
+            <td>High - smoother transitions between different colors</td>
         </tr>
     </table>
 
@@ -265,25 +265,25 @@
         </tr>
         <tr>
             <td>1 per pixel</td>
-            <td>Fastest - only 1 sample is evaluated per pixel</td>
-            <td>Lowest - only one color needs to be stored for each pixel</td>
-            <td>Lowest - jaggies and other aliasing artifacts are clearly visible</td>
+            <td>Fast - only 1 sample is evaluated per pixel</td>
+            <td>Low - only one color needs to be stored for each pixel</td>
+            <td>Low - jaggies and other aliasing artifacts are clearly visible</td>
         </tr>
         <tr>
             <td>4 per pixel</td>
-            <td>Slower - 4 samples are evaluated per pixel</td>
-            <td>Higher - four colors need to be stored for each pixel</td>
+            <td>Average - 4 samples are evaluated per pixel</td>
+            <td>Average - four colors need to be stored for each pixel</td>
             <td>Average - adds more blurring to the image</td>
         </tr>
         <tr>
             <td>9, 16, and more per pixel</td>
-            <td>Slowest - many samples are evaluated per pixel</td>
-            <td>Highest - many more colors need to be stored for each pixel</td>
-            <td>Highest - smoother color transitions and blending in the image</td>
+            <td>Slow - many samples are evaluated per pixel</td>
+            <td>High - many more colors need to be stored for each pixel</td>
+            <td>High - smoother color transitions and blending in the image</td>
         </tr>
     </table>
 	<p></p>
-	<p>Below are four versions of our chosen image (UC Berkeley view) using different level sampling and pixel sampling combinations. We observed that with <i>L_ZERO</i> and <i>P_NEAREST</i>, the image appears highly pixelated as it uses the full-resolution image with nearest sampling, as seen in the view of a part of the bridge in the pixel inspector. When switching to <i>L_ZERO</i> and <i>P_LINEAR</i>, we noticed that while the shades of some individual pixels changed, there wasn't a significant difference in the overall image. This is because <i>L_ZERO</i> prevents the pixels from taking on many intermediate values, which limits the effect of the averaging done by <i>P_LINEAR</i>. The pixel inspector confirms this, as there is still noticeable pixelation on the bridge. With <i>L_NEAREST</i> and <i>P_NEAREST</i>, we start to see more blurring, as we are now sampling from a lower-resolution texture map, although some pixelation still remains. The pixel inspector shows that the bridge cable has disappeared, which results from applying the lower-resolution texture. Finally, with <i>L_NEAREST</i> and <i>P_LINEAR</i>, the image becomes fully smoothed and the colors are more blended. In the pixel inspector, the bridge cable is no longer visible, and the suspenders are also significantly blurred.</p>
+	<p>Below are four versions of our chosen image (UC Berkeley view) using different level sampling and pixel sampling combinations. We observed that with <i>L_ZERO</i> and <i>P_NEAREST</i>, the image appears highly pixelated as it uses the full-resolution image with nearest sampling, as seen in the view of a part of the bridge in the pixel inspector. When switching to <i>L_ZERO</i> and <i>P_LINEAR</i>, we noticed that while the shades of some individual pixels changed, there wasn't a significant difference in the overall image. This is because <i>L_ZERO</i> prevents the pixels from taking on many intermediate values, which limits the effect of the averaging done by <i>P_LINEAR</i>. The pixel inspector confirms this, as there is still noticeable pixelation on the bridge. With <i>L_NEAREST</i> and <i>P_NEAREST</i>, we start to see more blurring, as we are now sampling from a lower-resolution texture map, although some pixelation still remains. The pixel inspector shows that the bridge cables are completely blurred, which results from applying the lower-resolution texture. Finally, with <i>L_NEAREST</i> and <i>P_LINEAR</i>, the image becomes fully smoothed. In the pixel inspector, we can now see that the colors of the sky and bridge are more blended with each other.</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
