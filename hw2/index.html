@@ -32,7 +32,7 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/">https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/</a>
 
 		<br>
 		
@@ -379,11 +379,83 @@
 			  </tr>
 			</table>
 		</div>
+
+		<p><b>Third attempt: flipping the edges once</b></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_19.png" width="400px"/>
+				  <figcaption>Initial edge.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_20.png" width="400px"/>
+				  <figcaption>Highlighted edge before flipping.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_21.png" width="400px"/>
+				  <figcaption>After the first and only edge flip.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_22.png" width="400px"/>
+				  <figcaption>First loop subdivision.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_23.png" width="400px"/>
+				  <figcaption>Second loop subdivision.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_24.png" width="400px"/>
+				  <figcaption>Third loop subdivision.</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><b>Fourth attempt: splitting the edges multiple times followed by flipping four edges on one face</b></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_25.png" width="400px"/>
+				  <figcaption>After splitting the edges of a face multiple times.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_26.png" width="400px"/>
+				  <figcaption>First iteration of loop subdivision.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_27.png" width="400px"/>
+				  <figcaption>After flipping eight of the edges in the face.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_28.png" width="400px"/>
+				  <figcaption>Next subdivision after the split and flip combination.</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="6_29.png" width="400px"/>
+				  <figcaption>Third loop subdivision.</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="6_30.png" width="400px"/>
+				  <figcaption>Fourth loop subdivision.</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 		
 		<p><b> Explanation of these effects, why they occur, and how our pre-processing helps alleviate the effects.</b></p>
-		<p>As observed in the results of loop subdivision after pre-processing with multiple edge splits, the cube becomes more symmetric compared to the version without the edge splits. This improvement occurs because adding more edges provides additional vertices along the edges, which facilitates better averaging of the positions and increases the number of control points. Through experiments with different iterations of edge flips and edge splits, we found that the edge splits significantly enhanced the symmetry of the cube after loop subdivision.</p>
-		<p>We found that edge flips also helped to redistribute the vertices and resulted in a more uniform and symmetrical appearance, reducing the likelihood of distortion in the final mesh – this allowed for more consistent averaging of vertex positions during the subdivision process. Though edge flips produced this result and allowed for better control of the mesh’s flow, we ultimately settled on the product of multiple edge splits as it managed to produce a consistently symmetrical final mesh through fewer calls.</p>
-		<p>In our first product, where we split each edge through every face once, we observed a noticeable improvement in symmetry from the original cube. In the second product, the results were even more refined, as further edge splits helped to make the cube's edges more pronounced and improve its overall geometry.</p>
+		<p>As observed in the results of loop subdivision after pre-processing with multiple edge splits, the cube becomes more symmetric compared to the version without the edge splits. This improvement occurs because adding more edges provides additional vertices along the edges, which facilitates better averaging of the positions and increases the number of control points. Through experiments with different iterations of edge flips and edge splits, we found that a combination of edge splits and flips significantly enhanced the symmetry of the cube after loop subdivision.</p>
+		<p>We found that the addition of edge flips also helped to redistribute the vertices and resulted in a more uniform and symmetrical appearance, reducing the likelihood of distortion in the final mesh – this allows for more consistent averaging of vertex positions during the subdivision process.</p>
+		<p>In our first product, where we split each edge through every face once, we observed a noticeable improvement in symmetry from the original cube. In the second product, the results were even more refined, as further edge splits helped to make the cube's edges more pronounced and improve its overall geometry. In the third attempt, we only ran through the edge flipping algorithm once, which did not assist with the symmetry of the cube. However, in the fourth attempt, we combined both a series of edge splits and flips to take advantage of the symmetry and even distribution that both algorithms aid in producing.</p>
 
 
 		</div>
