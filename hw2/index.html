@@ -241,7 +241,7 @@
 			</table>
 		</div>
 
-		<p><b>Screenshots of a mesh before and after a combination of both edge flips edge splits: </b></p>
+		<p><b>Screenshots of a mesh before and after a combination of both edge flips and edge splits: </b></p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
@@ -256,11 +256,14 @@
 			</table>
 		</div>
 
+		<p><b>Our debugging journey:</b></p>
+		<p>After implementing our solution for task 5, we initially noticed that the edges were not splitting properly. The newly added vertex’s position seemed off, and the triangles appeared to collapse into one area. We discovered that while we correctly calculated the new vertex’s position in 3D space using the midpoint method, we forgot to actually assign this value. While debugging, we also realized that we forgot to return the newly created vertex at the end, which would have caused issues in task 6. After fixing these two problems, our code successfully executed and exhibited correct edge-splitting behavior. Similar to task 4, the visual aids we created beforehand significantly reduced our debugging time.</p>
+
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
 
 		Our loop subdivision algorithm follows these steps: 
-		<p>First, we computed new positions for all original vertices in the input mesh and stored them in the newPosition member variable. For each vertex <i>v</i>, we set <i>u</i> to be 3/16 if <i>v->degree()</i> was 3, and \(3/(8 * v->degree())\) otherwise. Then, we calculated the sum of the original positions of all <i>v</i>’s old neighbors (sum), and used the formula <i>(1 - (v->degree() * u)) * original_position + u * sum)</i>, where <i>(original_position = v->position())</i>, to calculate the new position for <i>v</i>. We stored this new position in <i>v->newPosition</i> and set <i>v->isNew</i> to false, as <i>v</i> is not a newly added vertex. </p>
-		<p>Next, for each original edge e in the mesh, we computed the position of the new vertex splitting <i>e</i> using the formula \(⅜ * (A + B) + ⅛*(C + D)\), where A and B are the original positions of the two vertices on edge e, and C and D are the original positions of the two vertices connected to the new vertex by edges perpendicular to <i>e</i>. We stored this position in <i>e->newPosition</i> and set <i>e->isNew</i> to false, as <i>e</i> is not a new edge in the mesh.</p>
+		<p>First, we computed new positions for all original vertices in the input mesh and stored them in the <i>newPosition</i> member variable. For each vertex <i>v</i>, we set <i>u</i> to be 3/16 if <i>v->degree()</i> was 3, and \(3/(8 * v->degree())\) otherwise. Then, we calculated the sum of the original positions of all <i>v</i>’s old neighbors (<i>sum</i>), and used the formula <i>(1 - (v->degree() * u)) * original_position + u * sum)</i>, where <i>(original_position = v->position())</i>, to calculate the new position for <i>v</i>. We stored this new position in <i>v->newPosition</i> and set <i>v->isNew</i> to false, as <i>v</i> is not a newly added vertex. </p>
+		<p>Next, for each original edge <i>e</i> in the mesh, we computed the position of the new vertex splitting <i>e</i> using the formula \(⅜ * (A + B) + ⅛*(C + D)\), where A and B are the original positions of the two vertices on edge e, and C and D are the original positions of the two vertices connected to the new vertex by edges perpendicular to <i>e</i>. We stored this position in <i>e->newPosition</i> and set <i>e->isNew</i> to false, as <i>e</i> is not a new edge in the mesh.</p>
 		<p>After that, we split every original edge in the mesh. To do this, we first gathered all the edges currently in the mesh into an array (<i>origEdges</i>), and split only these edges, preventing infinite iteration caused by adding new edges to the mesh at each iteration. For each edge <i>e</i> in <i>origEdges</i>, we called <code>mesh.splitEdge(e)</code> to invoke our edge split implementation from task 5. Once we obtained the new vertex returned by <i>splitEdge</i>, we set its position to <i>e->newPosition</i>, which was precomputed for all the original edges in the mesh in the previous step. This ensured that the new vertex was correctly placed along the original edge at the intended split location. At this stage, we also modified the <i> splitEdge</i>  function to set the <i>isNew</i>  flag of the new vertex and of the two new edges perpendicular to the original edge we wanted to split on to true. This is useful for the next step of the loop subdivision algorithm. </p>
 		<p>Next, we flipped all new edges connecting an “old” and a “new” vertex. We did this by iterating through all edges in the modified mesh and checking if <i>e->isNew</i>  was true and if exactly one of the edge’s vertices (v1 or v2) had <i>isNew</i>  set to true. If both conditions were met, we called <code>mesh.flipEdge(e).</code> </p>
 		<p>Finally, we iterated through each vertex <i> v</i>  in the subdivided mesh and set <i>v->position</i> to <i>v->newPosition.</i> </p>
