@@ -134,7 +134,7 @@
 
 		<h3>Part 3: Area-weighted vertex normals</h3>
 		<p><b>Brief explanation of how we implemented the area-weighted vertex normals.</b></p>
-		<p>For a given vertex, we implemented area-weighted vertex normals by iterating through the triangle faces incident to the vertex. Our algorithm was similar to the algorithm used to retrieve a vertex’s neighboring vertices. At the start, we initialized a pointer to the vertex’s half-edge and an array of <i>FaceIters</i>, faces, to store the neighboring faces. Using a do-while loop, we traversed the mesh by retrieving the twin half-edge, moving to the next half-edge, and checking whether it belonged to a boundary face. If it did not, we added the face to the faces array. This process is repeated until we return to the original half-edge we started from. Once all incident triangle faces were collected, we iterated through the faces array and computed the area-weighted normal for each face. This was done by constructing two difference vectors in the same direction as two of the face’s half-edges. Each difference vector was calculated by subtracting the positions of the two vertices on the edge it lay on, and we ensured that the vector aligned with the direction of the face’s half-edge for the given edge. We then took the cross product of these two difference vectors to obtain the face normal pointing outward from the model, and ensured that this normal was weighted by the area of the face. We summed the area-weighted normals for all the incident faces and normalized the sum to obtain the final vertex normal.</p>
+		<p>For a given vertex, we implemented area-weighted vertex normals by iterating through the triangle faces incident to the vertex. Our algorithm was similar to the algorithm used to retrieve a vertex’s neighboring vertices. At the start, we initialized a pointer to the vertex’s half-edge and an array of <code>FaceIters</code>, <i>faces</i>, to store the neighboring faces. Using a do-while loop, we traversed the mesh by retrieving the twin half-edge, moving to the next half-edge, and checking whether it belonged to a boundary face. If it did not, we added the face to the <i>faces</i> array. This process was repeated until we return to the original half-edge we started from. Once all incident triangle faces were collected, we iterated through the <i>faces</i> array and computed the area-weighted normal for each face. This was done by constructing two difference vectors in the same direction as two of the face’s half-edges. Each difference vector was calculated by subtracting the positions of the two vertices on the edge it lay on. We then took the cross product of these two difference vectors to obtain the face normal pointing outward from the model, and ensured that this normal was weighted by the area of the face. We summed the area-weighted normals for all the incident faces and normalized the sum to obtain the final vertex normal.</p>
 		<p>These computed normals were then used for Phong shading on smooth surfaces. From the images above, we notice that Phong shading produces much smoother shading compared to flat shading on the teapot. </p>
 		<p><b>Comparing teapot shading with and without vertex normals:</b></p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -161,12 +161,12 @@
 
 
 		<figure>
-			<img src="4_drawing.png" alt="Teapot" style="width:100%"/>
+			<img src="4_drawing.png" alt="flipped edge implementation" style="width:100%"/>
 			<figcaption></figcaption>
 		</figure>
 
 		<figure>
-			<img src="4_drawing_2.png" alt="Teapot" style="width:100%"/>
+			<img src="4_drawing_2.PNG" alt="flipped edge implementation" style="width:100%"/>
 			<figcaption>Illustration of our flip edge implementation.</figcaption>
 		</figure>
 
