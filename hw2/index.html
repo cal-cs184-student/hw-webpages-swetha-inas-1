@@ -166,7 +166,7 @@
 		</figure>
 
 		<figure>
-			<img src="4_drawing_2.PNG" alt="flipped edge implementation" style="width:100%"/>
+			<img src="4_drawing_new.png" alt="flipped edge implementation" style="width:100%"/>
 			<figcaption>Illustration of our edge flip implementation.</figcaption>
 		</figure>
 
@@ -203,7 +203,7 @@
 		<h3>Part 5: Edge split</h3>
 		<p>We implemented the edge split operation by first checking if the edge was a boundary edge. If it was, we returned one of the vertices on the edge, as our algorithm does not support edge splits on boundary edges. Otherwise, we proceeded with the following steps:</p>
 		<p>Similar to part 4, we began by collecting all relevant mesh elements: edges, half-edges (including twins), faces, and vertices. Specifically, we identified 10 half-edges, 5 edges, 4 vertices, and 2 faces.</p>
-		<p>Unlike an edge flip, an edge split introduces new elements. Specifically, it adds two new faces, three new edges, one new vertex, and six new half-edges. Therefore, before reassigning pointers, we created these new elements. We calculated the new vertex’s position as the midpoint of the two vertices on the original edge. To facilitate the implementation of part 6 later, we also set the <i>isNew</i> flag of the new vertex and of the two new edges perpendicular to the original edge we wanted to split on to true.</p>
+		<p>Unlike an edge flip, an edge split introduces new elements. Specifically, it adds two new faces, three new edges, one new vertex, and six new half-edges. Therefore, before reassigning pointers, we created these new elements. We calculated the new vertex’s position as the midpoint of the two vertices on the original edge. To facilitate the implementation of part 6 later, we also set the <i>isNew</i> flag of the new vertex and of the two new edges perpendicular to the original edge we wanted to split on to <code>true</code>.</p>
 		<p>To prevent bugs, we exhaustively updated pointers for each mesh element, except for twin half-edges outside both faces, as these remain unaffected by the edge split. Similarly, we did not modify the half-edge pointers for existing edges on the mesh, as these edges still contain the same half-edges; only the connectivity between the half-edges changes after the split. We account for this by calling the <i>setNeighbors</i> function for each new half-edge and for each existing half-edge inside one of the mesh faces, updating the next half-edge, twin half-edge, vertex, edge, and face pointers accordingly. We also initialized the half-edge pointers for each of the new edges and updated the half-edge pointers for each vertex and face (both old and new).</p>
 		<p>Similar to part 4, we created visual references of the mesh before and after the edge split to aid in our implementation. These visuals helped us understand how to reassign pointers, identify which mesh elements needed modification, and determine which elements needed to be created. This ensured that we correctly initialized new pointers and updated existing pointers in our code. The images we created are attached below.</p>
 
@@ -212,7 +212,7 @@
 			<figcaption></figcaption>
 		</figure>
 		<figure>
-			<img src="5_drawing_2.png" alt="Teapot" style="width:100%"/>
+			<img src="5_drawing_new.png" alt="Teapot" style="width:100%"/>
 			<figcaption>Illustration of our split edge implementation.</figcaption>
 		</figure>
 		<p><b>Screenshots of a mesh before and after some edge splits: </b></p>
