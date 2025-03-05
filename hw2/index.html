@@ -213,7 +213,7 @@
 		</figure>
 		<figure>
 			<img src="5_drawing_new.png" alt="Teapot" style="width:100%"/>
-			<figcaption>Illustration of our split edge implementation.</figcaption>
+			<figcaption>Illustration of our edge split implementation.</figcaption>
 		</figure>
 		<p><b>Screenshots of a mesh before and after some edge splits: </b></p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -221,21 +221,21 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="empty_teapot.png" width="400px"/>
-				  <figcaption></figcaption>
+				  <figcaption>Teapot before any edge splits.</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="5_split_teapot_1.png" width="400px"/>
-				  <figcaption></figcaption>
+				  <figcaption>First round of edge splits on teapot.</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="5_split_teapot_2.png" width="400px"/>
-				  <figcaption></figcaption>
+				  <figcaption>Second round of edge splits through existing edges.</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="5_split_teapot_3.png" width="400px"/>
-				  <figcaption></figcaption>
+				  <figcaption>Different iterations of edge splits.</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -268,7 +268,7 @@
 
 		<p> <b>Observations on how meshes behave after loop subdivision. </b></p>
 		
-		<p>After loop subdivision, we observed that the sharp corners and edges became rounded because the subdivision algorithm computed new vertex positions by averaging the positions of neighboring vertices. The following is a visual representation of our observations</p>
+		<p>After loop subdivision, we observed that the sharp corners and edges became rounded because the subdivision algorithm computed new vertex positions by averaging the positions of neighboring vertices. The following is a visual representation of our observations:</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
