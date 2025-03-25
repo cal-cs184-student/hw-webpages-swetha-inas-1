@@ -48,7 +48,18 @@
 		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p><b>Ray generation and primitive intersection parts of the rendering pipeline:</b></p>
+
+		<p>The Camera::generate_ray(...) function begins by converting hFov and vFov from radians to degrees. Next, we construct a transformation matrix to map points from image space to camera space:
+		<table> <tr> <td>2 * tan(0.5 * hFov_rad)</td><td>0</td><td>-tan(0.5 * hFov_rad)</td> </tr> <tr> <td>0</td><td>2 * tan(0.5 * vFov_rad)</td><td>-tan(0.5 * vFov_rad)</td> </tr> <tr> <td>0</td><td>0</td><td>1</td> </tr> </table>
+		This matrix is derived from the fact that its columns must include the u and v vectors along the camera space plane as well as the origin of the camera space plane.
+		Since all points in camera space have a z coordinate of -1, we explicitly set this value after performing the 2D transformation of the normalized x and y coordinates.
+		Next, we construct a ray in camera space using the transformed coordinates and the camera origin. We then apply the c2w transformation to convert both the origin and direction into world space, effectively generating a ray in world space. Finally, we initialize the ray's min_t and max_t values to nClip and fClip, respectively, and return the constructed ray.
+		Next, we implemented PathTracer::raytrace_pixel(...), which calls PathTracer::est_radiance_global_illumination(...) to estimate the integral of radiance over a specific pixel coordinate. This is done by averaging ns_aa samples and updating the sampleBuffer at that pixel location with the computed radiance integral.
+		To achieve this, we called gridSampler->get_sample() ns_aa times. In each iteration, we added the x and y coordinates of the sample vector to the input x and y, then normalized them by the sampleBuffer width and height. These normalized coordinates were passed to generate_ray() to obtain a ray in world space, which was then passed to est_radiance_global_illumination(...) to estimate the scene radiance along the ray.
+		Finally, we averaged the scene radiance from all ns_aa rays to estimate the integral of radiance over the pixel.</p>
+
+
 
 		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
