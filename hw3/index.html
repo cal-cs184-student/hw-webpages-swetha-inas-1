@@ -62,7 +62,7 @@
 
 		<p>By collecting terms and rewriting the equation in matrix form, we solved for <b>t</b>, <b>b1</b>, and <b>b2</b> by multiplying the inverse of the matrix <b>[-r.d, p2 - p1, p3 - p1]</b> with <b>r.o - p1</b>.</p>
 
-		<p>Here, <b>t</b> represents the intersection time, while <b>b1</b> and <b>b2</b> are the barycentric coordinates corresponding to <b>p2</b> and <b>p3</b>, respectively, which define the intersection point within the triangle. The barycentric coordinate corresponding to <b>p1</b> is given by <b>1 - b1 - b2</b></p>
+		<p>Here, <b>t</b> represents the intersection time, while <b>b1</b> and <b>b2</b> are the barycentric coordinates corresponding to <b>p2</b> and <b>p3</b>, respectively, which define the intersection point within the triangle. The barycentric coordinate corresponding to <b>p1</b> is given by <b>1 - b1 - b2.</b></p>
 
 		<p>To determine whether an intersection occurs, we check if the following condition holds:</p>
 		<p><b>
@@ -138,7 +138,25 @@
 		</div>
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+		<p><b>Our BVH construction algorithm and the heuristic we chose for picking the splitting point:</b></p>
+		
+		<p>
+			In the <b>BVHAccel::construct_bvh()</b> function, we used the provided start and end iterators to gather the bounding boxes of all the primitive shapes and create a new bounding box (<b>bbox</b>) that encapsulates all these bounding boxes. We also created a new vector, <b>std::vector&lt;Primitive *&gt; primitive_shapes</b>, to store the individual primitives while iterating through them using the start and end iterators.
+		</p>
+		
+		<p>
+			Next, we constructed a new <b>BVHNode</b> using <b>bbox</b>. We then checked if the size of the <b>primitive_shapes</b> vector was less than or equal to the <b>max_leaf_size</b>. If it was, we assigned <b>node-&gt;start</b> and <b>node-&gt;end</b> the same values that were passed to <b>BVHAccel::construct_bvh()</b> and returned the node.
+		</p>
+		
+		<p>
+			If the size of <b>primitive_shapes</b> exceeded the <b>max_leaf_size</b>, we determined the longest axis of the bounding box (x, y, or z) and split along that axis. The split point was calculated as the average of the centroids along the longest axis. After determining the split point, we divided the primitives into two vectors—<b>std::vector&lt;Primitive *&gt; *leftprimitives</b> and <b>std::vector&lt;Primitive *&gt; *rightprimitives</b>—based on whether their centroid coordinate along the longest axis was less than or greater than or equal to the average.
+		</p>
+		
+		<p>
+			Finally, we recursively called <b>BVHAccel::construct_bvh()</b> on the beginning and end of <b>leftprimitives</b> and <b>rightprimitives</b> with the same <b>max_leaf_size</b>, assigning the results to <b>node-&gt;l</b> and <b>node-&gt;r</b> respectively. After the recursion, we returned the node.
+		</p>
+		
 
 		<h2>Part 3: Direct Illumination</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
