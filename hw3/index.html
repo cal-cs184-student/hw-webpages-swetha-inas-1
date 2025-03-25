@@ -51,18 +51,44 @@
 		<p><b>Ray generation and primitive intersection parts of the rendering pipeline:</b></p>
 
 		<p>The Camera::generate_ray(...) function begins by converting hFov and vFov from radians to degrees. Next, we construct a transformation matrix to map points from image space to camera space:
-			<span>[</span>
-			<span>2 * tan(0.5 * hFov_rad)   0   -tan(0.5 * hFov_rad)</span>
-			<span>0   2 * tan(0.5 * vFov_rad)   -tan(0.5 * vFov_rad)</span>
-			<span>0   0   1</span>
-			<span>]</span>
+		[2 * tan(0.5 * hFov_rad)  0  -tan(0.5 * hFov_rad)  0  2 * tan(0.5 * vFov_rad)  -tan(0.5 * vFov_rad)  0  0  1]
 		This matrix is derived from the fact that its columns must include the u and v vectors along the camera space plane as well as the origin of the camera space plane.
 		Since all points in camera space have a z coordinate of -1, we explicitly set this value after performing the 2D transformation of the normalized x and y coordinates.
-		Next, we construct a ray in camera space using the transformed coordinates and the camera origin. We then apply the c2w transformation to convert both the origin and direction into world space, effectively generating a ray in world space. Finally, we initialize the ray's min_t and max_t values to nClip and fClip, respectively, and return the constructed ray.
-		Next, we implemented PathTracer::raytrace_pixel(...), which calls PathTracer::est_radiance_global_illumination(...) to estimate the integral of radiance over a specific pixel coordinate. This is done by averaging ns_aa samples and updating the sampleBuffer at that pixel location with the computed radiance integral.
+		Next, we construct a ray in camera space using the transformed coordinates and the camera origin. We then apply the c2w transformation to convert both the origin and direction into world space, effectively generating a ray in world space. Finally, we initialize the ray's min_t and max_t values to nClip and fClip, respectively, and return the constructed ray.</p>
+
+		<p>Next, we implemented PathTracer::raytrace_pixel(...), which calls PathTracer::est_radiance_global_illumination(...) to estimate the integral of radiance over a specific pixel coordinate. This is done by averaging ns_aa samples and updating the sampleBuffer at that pixel location with the computed radiance integral.
 		To achieve this, we called gridSampler->get_sample() ns_aa times. In each iteration, we added the x and y coordinates of the sample vector to the input x and y, then normalized them by the sampleBuffer width and height. These normalized coordinates were passed to generate_ray() to obtain a ray in world space, which was then passed to est_radiance_global_illumination(...) to estimate the scene radiance along the ray.
 		Finally, we averaged the scene radiance from all ns_aa rays to estimate the integral of radiance over the pixel.</p>
 
+        <p>We also implemented functions to detect and determine the point(s) of intersection for the triangle and sphere primitives. These are described in more detail below. </p>
+
+		<p><b>The triangle intersection algorithm we implemented:</b></p>
+
+		<p>For triangle intersection, we used the concept that any point inside a triangle with vertices <b>p1</b>, <b>p2</b>, and <b>p3</b> can be represented using barycentric coordinates: <b>(1 - b1 - b2, b1, b2)</b>. We set this point, <b>p1 * (1 - b1 - b2) + p2 * b1 + p3 * b2</b> equal to the ray equation: <b>r(t) = o + t * d</b></p>
+
+		<p>By collecting terms and rewriting the equation in matrix form, we solved for <b>t</b>, <b>b1</b>, and <b>b2</b> by multiplying the inverse of the matrix <b>[-r.d, p2 - p1, p3 - p1]</b> with <b>r.o - p1</b>.</p>
+
+		<p>Here, <b>t</b> represents the intersection time, while <b>b1</b> and <b>b2</b> are the barycentric coordinates corresponding to <b>p2</b> and <b>p3</b>, respectively, which define the intersection point within the triangle. The barycentric coordinate corresponding to <b>p1</b> is given by <b>1 - b1 - b2</b></p>
+
+		<p>To determine whether an intersection occurs, we check if the following condition holds:</p>
+		<p><b>
+		sol.x >= r.min_t && sol.x <= r.max_t &&
+		1 - sol.y - sol.z >= 0 && 1 - sol.y - sol.z <= 1 &&
+		sol.y >= 0 && sol.y <= 1 && sol.z >= 0 && sol.z <= 1
+		</b></p>
+	
+		<p>where <b>sol.x</b> represents <b>t</b>, <b>sol.y</b> represents <b>b1</b>, and <b>sol.z</b> represents <b>b2</b>.</p>
+
+		In <b>has_intersection()</b>, if the condition is satisfied, we return <b>true</b>; otherwise, we return <b>false</b>.
+        In <b>intersect()</b>, if the condition is met, we return <b>true</b> and update the intersection information as follows:
+		<p><b>
+			isect->t = sol.x;
+			r.max_t = sol.x;
+			isect->bsdf = get_bsdf();
+			isect->primitive = this;
+			isect->n = (1 - sol.y - sol.z) * n1 + sol.y * n2 + sol.z * n3;
+		</b></p>
+		<p>Otherwise, we simply return <b>false</b>.</p>
 
 
 		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
