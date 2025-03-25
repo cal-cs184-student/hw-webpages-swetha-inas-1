@@ -66,33 +66,32 @@
 
 		<p>To determine whether an intersection occurs, we check if the following condition holds:</p>
 		<p><b>
-		sol.x >= r.min_t && sol.x <= r.max_t &&
-		1 - sol.y - sol.z >= 0 && 1 - sol.y - sol.z <= 1 &&
-		sol.y >= 0 && sol.y <= 1 && sol.z >= 0 && sol.z <= 1
+			sol.x >= r.min_t && sol.x <= r.max_t &&
+			1 - sol.y - sol.z >= 0 && 1 - sol.y - sol.z <= 1 &&
+			sol.y >= 0 && sol.y <= 1 && sol.z >= 0 && sol.z <= 1;
 		</b></p>
 	
 		<p>where <b>sol.x</b> represents <b>t</b>, <b>sol.y</b> represents <b>b1</b>, and <b>sol.z</b> represents <b>b2</b>.</p>
 
 		In <b>has_intersection()</b>, if the condition is satisfied, we return <b>true</b>; otherwise, we return <b>false</b>.
         In <b>intersect()</b>, if the condition is met, we return <b>true</b> and update the intersection information as follows:
-		<p><b>
-			isect->t = sol.x;
-			r.max_t = sol.x;
-			isect->bsdf = get_bsdf();
-			isect->primitive = this;
-			isect->n = (1 - sol.y - sol.z) * n1 + sol.y * n2 + sol.z * n3;
-		</b></p>
+		<ul>
+			<li><strong>isect->t = sol.x;</strong></li>
+			<li><strong>r.max_t = sol.x;</strong></li>
+			<li><strong>isect->bsdf = get_bsdf();</strong></li>
+			<li><strong>isect->primitive = this;</strong></li>
+			<li><strong>isect->n = (1 - sol.y - sol.z) * n1 + sol.y * n2 + sol.z * n3;</strong></li>
+		</ul>
 		<p>Otherwise, we simply return <b>false</b>.</p>
 
 		<p><b>The sphere intersection algorithm we implemented:</b></p>
 
-		<p>For sphere intersection, we followed a similar approach in <strong>Sphere::test(...)</strong>. We used the equation for a sphere:</p>
-		<p><strong>(p - o) ^ 2 - r² = 0</strong></p>
+		<p>For sphere intersection, we followed a similar approach in <strong>Sphere::test(...)</strong>. We used the equation for a sphere: <strong>(p - o) ^ 2 - r2 = 0</strong></p>
 		<p>Substituting <strong>p</strong> with the ray equation <strong>r(t) = o + t * d</strong>, we solved for the intersection times <strong>t</strong> using the quadratic formula, where:</p>
 		<ul>
 			<li><strong>a = dot(r.d, r.d)</strong></li>
 			<li><strong>b = 2 * dot(r.o - o, r.d)</strong></li>
-			<li><strong>c = dot(r.o - o, r.o - o) - r²</strong></li>
+			<li><strong>c = dot(r.o - o, r.o - o) - r2</strong></li>
 		</ul>
 		<p>If <strong>b² - 4ac</strong> was negative or if both intersection times were either less than <strong>r.min_t</strong> or greater than <strong>r.max_t</strong>, we returned <strong>false</strong>. Otherwise, we computed the minimum of the two intersection times (<strong>t1</strong>) and the maximum (<strong>t2</strong>), returning <strong>true</strong>.</p>
 		
@@ -102,7 +101,7 @@
 	
 		<ul>
 			<li><strong>i->t = t1;</strong></li>
-			<li><strong>If (t1 &lt; r.min_t &amp;&amp; t1 &gt; r.max_t) { i->t = t2; }</strong></li>
+			<li><strong>if (t1 &lt; r.min_t &amp;&amp; t1 &gt; r.max_t) { i->t = t2; }</strong></li>
 			<li><strong>r.max_t = i->t;</strong></li>
 			<li><strong>Vector3D normal_vec = r.at_time(i->t) - o;</strong></li>
 			<li><strong>normal_vec.normalize();</strong></li>
