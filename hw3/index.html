@@ -162,14 +162,285 @@
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 		<h2>Part 4: Global Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p><b>Our implementation of the indirect lighting function:</b></p>
+
+		<p>We added support for indirect lighting on top of our direct lighting function to consider light reflected from other surfaces within the scene. In <i>est_radiance_global_illumination()</i>, we first call <i>zero_bounce_radiance()</i> and then call <i>at_least_one_bounce_radiance()</i> and add the result of it.</p>
+
+		<p>We begin by calling <i>one_bounce_radiance()</i> to calculate the direct lighting at the current ray and intersection point. If the ray's depth is 1 or less, we stop the process. Otherwise, we continue. We use a fixed continuation probability (cpdf) to perform Russian Roulette, which may terminate the function early with probability 1 - cpdf. If the function continues, we compute the next ray bounce. A BSDF value is sampled at the surface intersection using <i>isect->bsdf.sample_f()</i>, and a new ray and intersection point are generated, with the new ray’s depth reduced by one. We then check for an intersection with the BVH. If an intersection occurs, we recursively call <i>at_least_one_bounce_radiance()</i> with the new ray, apply the reflectance formula to the result, and add it to the total indirect lighting. We end by returning the accumulated indirect illumination.</p>
+
+		<p><b>Images rendered with global (direct and indirect) illumination:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="4_spheres_global.png" width="400px"/>
+		<figcaption><i>spheres</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="4_blob_global.png" width="400px"/>
+						<figcaption><i>blob.dae</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p><b>Comparing rendered views with only direct illumination and indirect illumination:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="4_spheres_direct.png" width="400px"/>
+		<figcaption><i>with only direct illumination</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="4_spheres_indirect.png" width="400px"/>
+						<figcaption><i>with only indirect illumination</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p><b>Rendering the mth bounce of light for <i>CBbunny.dae</i> with <i>max_ray_depth</i> set to 0, 1, 2, 3, 4, and 5 (the -m flag), and <i>isAccumBounces=false</i>:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="bounce0.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 0</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce1.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 1</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="bounce1test.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 2</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce2test.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 3</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="bounce3test.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 4</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce4test.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 5</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p><b>What we see for the 2nd and 3rd bounce of light and how it contributes to the quality of the rendered image compared to rasterization:</b></p>
+
+		<p>The 2nd and 3rd bounces of light create a softer and more natural-looking result. This is because in path tracing, it accounts for factors like light bouncing, energy conservation, and color spill surfaces. In comparison to rasterization, it produces more accurate photos without the extra approximations.</p>
+
+		<p><b>Rendered views of accumulated and unaccumulated bounces for <i>CBbunny.dae</i> with <i>max_ray_depth</i> set to 0, 1, 2, 3, 4, and 5 (the -m flag):</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="bounce0.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 0</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce0.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 0</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="cb_bunny_m5_accum.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 1</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce1.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 1</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="cb_bunny_m4_accum.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 2</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce1test.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 2</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="cb_bunny_m3_accum.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 3</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce2test.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 3</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="cb_bunny_m2_accum.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 4</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce3test.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 4</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="cb_bunny_m1_accum.png" width="400px"/>
+		<figcaption><i>Accumulated bounces with m = 5</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bounce4test.png" width="400px"/>
+						<figcaption><i>Unaccumulated bounces with m = 5</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p><b>Outputting Russian Roulette rendering with different max_ray_depths and 1024 samples per pixel:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="bunny_m0.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 0</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bunny_m1.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 1</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="bunny_m2.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 2</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bunny_m3.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 3</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="bunny_m4.png" width="400px"/>
+		<figcaption><i>max_ray_depth = 4</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bunny_m100.png" width="400px"/>
+						<figcaption><i>max_ray_depth = 100</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<p><b>Comparing rendered views of <i>CBspheres_lambertian.dae</i>with various sample-per-pixel rates, including at least 1, 2, 4, 8, 16, 64, and 1024, using 4 light rays:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="spheres_s1.png" width="400px"/>
+		<figcaption><i>s = 1</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="spheres_s2.png" width="400px"/>
+						<figcaption><i>s = 2</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="spheres_s4.png" width="400px"/>
+		<figcaption><i>s = 4</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="spheres_s8.png" width="400px"/>
+						<figcaption><i>s = 8</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="spheres_s16.png" width="400px"/>
+		<figcaption><i>s = 16</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="spheres_s32.png" width="400px"/>
+						<figcaption><i>s = 32</i></figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="spheres_s64.png" width="400px"/>
+		<figcaption><i>s = 64</i></figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="spheres_s1024.png" width="400px"/>
+						<figcaption><i>s = 1024</i></figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+		
 
 		<h2>Part 5: Adaptive Sampling</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-		<h2>(Optional) Part 6: Extra Credit Opportunities</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-		
+		<p><b>Adaptive sampling and our implementation of it:</b></p>
+
+		<p>From what we observe, Monte Carlo path tracing is effective for producing realistic images, but it often introduces significant noise. While increasing the number of samples per pixel can help reduce this noise, it’s not the most efficient approach. Adaptive sampling offers a more optimized solution by adjusting the sampling rate based on how quickly each pixel converges. This method avoids uniformly oversampling all pixels and instead allocates fewer samples to pixels that converge quickly and more to those in complex regions of the image.</p>
+
+		<p>To implement this, we modified the <i>raytrace_pixel()</i> function with a simple adaptive sampling algorithm. We start by initializing two variables, s1 and s2, to zero. As we loop through the samples, we calculate the illuminance of each one and update s1 and s2 with the cumulative illuminance and the square of the illuminance, respectively. At regular intervals (every <i>samplesPerBatch</i> iterations), we compute the mean and standard deviation using these values. By dividing the standard deviation by the number of samples taken so far, we estimate how much the pixel has converged. If this value is less than or equal to <i>maxTolerance</i> multiplied by the mean, we consider the pixel converged and stop sampling early. If not, we continue sampling as usual.</p>
+
+		<p><b>Task: Pick two scenes and render them with at least 2048 samples per pixel. Show a good sampling rate image with clearly visible differences in sampling rate over various regions and pixels. Include both your sample rate image, which shows your how your adaptive sampling changes depending on which part of the image you are rendering, and your noise-free rendered result. Use 1 sample per light and at least 5 for max ray depth.</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+		<table style="width: 100%; text-align: center; border-collapse: collapse;">
+		<tr>
+					<td style="text-align: center;">
+						<img src="bunny_task5.png" width="400px"/>
+		<figcaption>Rendered Image</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="bunny_task5_rate.png" width="400px"/>
+						<figcaption>Sample Rate Image</figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="spheres_task5.png" width="400px"/>
+		<figcaption>Rendered Image</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="spheres_task5_rate.png" width="400px"/>
+						<figcaption>Sample Rate Image</figcaption>
+					</td>
+				</tr>
+		<tr>
+					<td style="text-align: center;">
+						<img src="dragon_task5.png" width="400px"/>
+		<figcaption>Rendered Image</figcaption>
+					</td>
+					<td style="text-align: center;">
+						<img src="dragon_task5_rate.png" width="400px"/>
+						<figcaption>Sample Rate Image</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+
 		<h2>Additional Notes (please remove)</h2>
 		<ul>
 			<li>You can also add code if you'd like as so: <code>code code code</code></li>
