@@ -28,16 +28,15 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Spring 2025 Homework 3 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Names: Inas Zulaikha Anwar and Swetha Rajkumar</div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/">https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/</a>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw3-swetha-and-inas.git">https://github.com/cal-cs184-student/sp25-hw3-swetha-and-inas.git</a>
 		
 		<figure>
 			<img src="cornell.png" alt="Cornell Boxes with Bunnies" style="width:70%"/>
-			<figcaption>You can add images with captions!</figcaption>
 		</figure>
 
 		<!--
@@ -45,8 +44,12 @@
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+	<p>In this project, we built a renderer to produce realistic images using a path tracing algorithm. We began by implementing ray generation and scene intersection, which involved converting coordinates from image space to camera space, generating pixel samples, and coding ray-triangle and ray-sphere intersection tests. We realized that even with basic shading, renders were slow. We implemented a Bounding Volume Hierarchy (BVH) to accelerate rendering and implemented intersection tests for bounding boxes and the BVH itself.</p>
 
+		<p>We also added direct illumination features, including a diffuse Bidirectional Scattering Distribution Function (BSDF), zero-bounce illumination (light reaching the camera directly), and direct lighting using both uniform hemisphere sampling and importance sampling of lights. We then added global illumination to further smooth renders, using recursive path tracing to estimate incoming light and Russian Roulette for unbiased termination.</p>
+		
+	<p>Finally, we implemented adaptive sampling to reduce image noise by dynamically allocating more samples to regions that require better precision at the cost of an increased render time. Upon completion, we have a deeper appreciation for the complexity behind photorealistic computer-generated imagery.</p>
+		
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
 		<p><b>Ray generation and primitive intersection parts of the rendering pipeline:</b></p>
 
