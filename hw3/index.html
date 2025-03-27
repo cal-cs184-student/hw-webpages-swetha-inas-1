@@ -207,7 +207,77 @@
 			</table>
 		</div>
 
+		<p><b>Rendering time comparison analysis on a few scenes with moderately complex geometries with and without BVH acceleration:</b></p>
+
+		<p>With BVH acceleration, we observed that <strong>maxplank.dae</strong> took <strong>0.1635 seconds</strong>, <strong>cow.dae</strong> took <strong>0.1192 seconds</strong>, and <strong>CBlucy.dae</strong> took <strong>0.2122 seconds</strong> to collect primitives, build the BVH, and render the scene. In contrast, without BVH acceleration, <strong>maxplank.dae</strong> took <strong>638.322 seconds</strong>, <strong>cow.dae</strong> took <strong>90.2258 seconds</strong>, and <strong>CBlucy.dae</strong> took <strong>2063.2387 seconds</strong> to complete the same process.</p>
+
+		<p>The reason for these longer rendering times is that, without BVH acceleration, every primitive in the scene must be checked during ray-scene intersection. In contrast, BVH acceleration constructs a binary tree that significantly reduces the number of necessary intersection tests. Instead of checking every primitive, the algorithm first determines whether the ray intersects a node's bounding box. If there is no intersection, we can immediately discard that node and its entire subtree, as the ray cannot intersect any primitives contained within it. This optimization reduces computational overhead and lowers the ray intersection complexity from <strong>O(n)</strong> to <strong>O(log n)</strong>, greatly improving performance.</p>
+
+
 		<h2>Part 3: Direct Illumination</h2>
+
+		<p><b>Both implementations of the direct lighting function:</b></p>
+
+		<p>The direct lighting function using <strong>uniform hemisphere sampling</strong> operates by first iterating through the desired number of samples (<strong>num_samples</strong>), which in this case is calculated as <strong>scene->lights.size() * ns_area_light</strong>. In each iteration, we uniformly sample a direction in object space on the hemisphere:</p>
+
+		<pre><strong>Vector3D obj_sample = hemisphereSampler->get_sample();</strong></pre>
+
+		<p>Next, we construct a ray originating from the hit point and pointing in the direction of <strong>o2w * obj_sample</strong>. We initialize the ray’s <strong>min_t</strong> to be <strong>EPS_F</strong> to ensure that the ray doesn’t intersect the surface it started from. We then call the <strong>BVHAccel::intersect(Ray& r, Intersection* i)</strong> function to check for an intersection. If an intersection occurs, we retrieve the emission of the intersected object:</p>
+
+		<pre><strong>Vector3D l = obj_intersection.bsdf->get_emission();</strong></pre>
+
+		<p>We then compute <strong>cos_angle</strong> by taking the dot product of the sampled direction and the normal of the input intersection (<strong>isect</strong>) in object space, which is <strong>(0, 0, 1)</strong>:</p>
+
+		<pre><strong>double cos_angle = dot(obj_sample, Vector3D(0, 0, 1));</strong></pre>
+
+		<p>Additionally, we use the object's <strong>BSDF</strong> to determine how much light is reflected onto the outgoing direction <strong>w_out</strong> from our sampled direction:</p>
+
+		<pre><strong>Vector3D fr = isect.bsdf->f(obj_sample, w_out);</strong></pre>
+
+		<p>Since our sample directions are uniformly distributed over the hemisphere, the probability associated with each sampled direction is:</p>
+
+		<pre><strong>double prob = 1 / (2 * M_PI);</strong></pre>
+
+		<p>We then accumulate the contribution to <strong>L_out</strong> using:</p>
+
+		<pre><strong>L_out += (fr * l * cos_angle) / prob;</strong></pre>
+
+		<p>After repeating this process <strong>num_samples</strong> times, we compute the final radiance estimate by averaging:</p>
+
+		<pre><strong>L_out /= num_samples;</strong></pre>
+
+		<p>Finally, we return <strong>L_out</strong>.</p>
+
+
+		<p>The direct lighting function, implemented via importance sampling of light sources, operates by iterating through all scene lights provided by <strong>scene-&gt;lights</strong>. For each light, given by <strong>SceneLight* sceneL = scene-&gt;lights[i]</strong>, we first check whether it is a point light source using <strong>sceneL-&gt;is_delta_light()</strong>. If it is a point light source, we set the number of samples, <strong>num_samples</strong>, to <strong>1</strong>; otherwise, we set it to <strong>ns_area_light</strong>.</p>
+
+		<p>Next, we sample the light <strong>num_samples</strong> times, calculating the emitted radiance using:</p>
+
+		<pre><strong>Vector3D scene_radiance = sceneL-&gt;sample_L(hit_p, &amp;wi, &amp;distToLight, &amp;pdf);</strong></pre>
+
+		<p>Here:</p>
+		<ul>
+		<li><strong>wi</strong> is the sampled direction in world space from <strong>hit_p</strong> to <strong>sceneL</strong>.</li>
+		<li><strong>distToLight</strong> represents the distance between <strong>hit_p</strong> and <strong>sceneL</strong> along <strong>wi</strong>.</li>
+		<li><strong>pdf</strong> is the probability density function evaluated at <strong>wi</strong>.</li>
+		</ul>
+
+		<p>If <strong>distToLight</strong> is positive—indicating that the light is not behind the surface at the hit point—we construct a ray originating from <strong>hit_p</strong> in the direction of <strong>wi</strong>. To prevent self-intersections, we set the ray’s <strong>min_t</strong> to <strong>EPS_F</strong>. Similarly, we set its <strong>max_t</strong> to <strong>distToLight - EPS_F</strong> to ensure it does not intersect <strong>sceneL</strong>.</p>
+
+		<p>If this ray does not intersect any objects, then there is no obstruction between <strong>hit_p</strong> and <strong>sceneL</strong>, meaning <strong>sceneL</strong> contributes light to <strong>hit_p</strong>. In this case, we use the object's <strong>BSDF</strong> to determine how much light is reflected in the outgoing direction, <strong>w_out</strong>, from the sampled direction:</p>
+
+		<pre><strong>Vector3D fr = isect.bsdf-&gt;f(w2o * wi, w_out);</strong></pre>
+
+		<p>Next, we compute <strong>cos_angle</strong> by taking the dot product of the sampled direction and the normal of the input intersection (<strong>isect</strong>) in object space, which is <strong>(0, 0, 1)</strong>:</p>
+
+		<pre><strong>double cos_angle = dot(w2o * wi, Vector3D(0, 0, 1));</strong></pre>
+
+		<p>Finally, we accumulate the contribution to <strong>L_out</strong> using:</p>
+
+		<pre><strong>L_out += ((fr * scene_radiance * cos_angle) / pdf) / num_samples;</strong></pre>
+
+		<p>After all samples are processed, we return <strong>L_out</strong>.</p>
+
 
 		<p><b>Some images rendered with uniform hemisphere sampling:</b></p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -246,6 +316,7 @@
 		</div>
 
 		<p><b>Comparing the noise levels in soft shadows when rendering with 1, 4, 16, and 64 light rays (the -l flag) and with 1 sample per pixel (the -s flag) using light sampling, not uniform hemisphere sampling:</b></p>
+		<p>As demonstrated below, we observed that increasing the number of light rays reduced noise in the soft shadows. In particular, the shadow cast beneath the bunny became more defined, with the pixels forming the shadow appearing more concentrated and less dispersed or grainy. The most noticeable improvement occurred when increasing from <strong>1</strong> light ray to <strong>4</strong>, resulting in a significant reduction in noise.</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
@@ -273,15 +344,16 @@
 
 		<p><b>Comparing the results between uniform hemisphere sampling and lighting sampling:</b></p>
 
-
+		<p>We observed that uniform hemisphere sampling introduced more noise in the renders compared to light source sampling. For the same <strong>../dae/sky/CBbunny.dae</strong> render—using identical settings of <strong>64 samples per pixel</strong>, <strong>32 light rays</strong>, <strong>6 light bounces</strong>, and an <strong>output resolution of 480 × 360</strong>—we noticed that both the background and the bunny appeared significantly grainier with uniform hemisphere sampling. In contrast, importance sampling of light sources produced much cleaner images with noticeably reduced noise. Increased noise occurs with uniform hemisphere sampling because many of the sampled rays do not point towards a light source. As a result, the incoming radiance is zero for most sampled directions, leading to a noisier output. On the other hand, importance sampling prioritizes directions where the incoming radiance is more likely to be non-zero. This results in a smoother, less noisy render.</p>
 
 		<h2>Part 4: Global Illumination</h2>
 		<p><b>Our implementation of the indirect lighting function:</b></p>
 
-		<p>We added support for indirect lighting on top of our direct lighting function to consider light reflected from other surfaces within the scene. In <i>est_radiance_global_illumination()</i>, we first call <i>zero_bounce_radiance()</i> and then call <i>at_least_one_bounce_radiance()</i> and add the result of it.</p>
+		<p>We added support for indirect lighting on top of our direct lighting function to consider light reflected from other surfaces within the scene. In <code>est_radiance_global_illumination()</code>, we first call <code>zero_bounce_radiance()</code> for direct surface emission and then call <code>at_least_one_bounce_radiance()</code> and add the result of it.</p>
 
-		<p>We begin by calling <i>one_bounce_radiance()</i> to calculate the direct lighting at the current ray and intersection point. If the ray's depth is 1 or less, we stop the process. Otherwise, we continue. We use a fixed continuation probability (cpdf) to perform Russian Roulette, which may terminate the function early with probability 1 - cpdf. If the function continues, we compute the next ray bounce. A BSDF value is sampled at the surface intersection using <i>isect->bsdf.sample_f()</i>, and a new ray and intersection point are generated, with the new ray’s depth reduced by one. We then check for an intersection with the BVH. If an intersection occurs, we recursively call <i>at_least_one_bounce_radiance()</i> with the new ray, apply the reflectance formula to the result, and add it to the total indirect lighting. We end by returning the accumulated indirect illumination.</p>
+		<p>Inside <code>at_least_one_bounce_radiance()</code>, we begin by calling <code>one_bounce_radiance()</code> to compute the direct lighting contribution at the current intersection. If the ray’s depth is 1 or less, we return immediately since no further bounces are allowed. If not, we proceed to estimate indirect lighting. To reduce unnecessary computation, we use Russian Roulette to probabilistically terminate low-contribution paths: we flip a biased coin with a fixed termination probability (e.g., 0.05), meaning there's a 5% chance we terminate and a 95% chance we continue.</p>
 
+		<p>If the path continues, we sample the BSDF at the surface intersection using <code>isect-&gt;bsdf-&gt;sample_f()</code> to generate a new direction and construct a new ray with reduced depth. We then check for intersection with the scene. If an intersection is found, we recursively call <code>at_least_one_bounce_radiance()</code> with the new ray. The returned radiance is then scaled by the BSDF value, cosine term, and divided by the sampling PDF. Finally, we add this to the accumulated indirect illumination and the return the total.</p>
 		<p><b>Images rendered with global (direct and indirect) illumination:</b></p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
