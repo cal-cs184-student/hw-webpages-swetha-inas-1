@@ -113,32 +113,52 @@
 			<li><strong>i->bsdf = get_bsdf();</strong></li>
 		</ul>	
 
+		<p><b>Images with normal shading:</b></p>
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="CBempty.png" width="400px"/>
+				  <figcaption><i>CBempty.dae</i></figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="CBspheres.png" width="400px"/>
+				  <figcaption><i>CBspheres.dae</i></figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="cube_normal.png" width="400px"/>
+				  <figcaption><i>cube.dae</i></figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="cornell.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="plane_normal.png" width="400px"/>
+				  <figcaption><i>plane.dae</i></figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
+
+		<p><b>Sanity checks after tasks 1 and 2:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="CBempty_sanity.png" width="400px"/>
+				  <figcaption><i>CBempty.dae</i></figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="banana.png" width="400px"/>
+				  <figcaption><i>cube.dae</i></figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
 		
 		<h2>Part 2: Bounding Volume Hierarchy</h2>
 
@@ -159,10 +179,101 @@
 		<p>
 			Finally, we recursively called <b>BVHAccel::construct_bvh()</b> on the beginning and end of <b>leftprimitives</b> and <b>rightprimitives</b> with the same <b>max_leaf_size</b>, assigning the results to <b>node-&gt;l</b> and <b>node-&gt;r</b> respectively. After the recursion, we returned the node.
 		</p>
+
+		<p><b>Images with normal shading for a few large .dae files that we can only render with BVH acceleration:</b></p>
 		
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="lucy.png" width="400px"/>
+				  <figcaption><i>lucy.dae</i></figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="cow.png" width="400px"/>
+				  <figcaption><i>cow.dae</i></figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="plank.png" width="400px"/>
+				  <figcaption><i>plank.dae</i></figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="beast_normal.png" width="400px"/>
+				  <figcaption><i>beast.dae</i></figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h2>Part 3: Direct Illumination</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+		<p><b>Some images rendered with uniform hemisphere sampling:</b></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="CBbunny_16_8.png" width="400px"/>
+				  <figcaption><i>-s 16 -l 8</i></figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="CBbunny_H_64_32.png" width="400px"/>
+				  <figcaption><i>-s 64 -l 32 -m 6</i></figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><b>Some images rendered with importance sampling lights:</b></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_1_1.png" width="400px"/>
+				  <figcaption><i>-s 1 -l 1 -m 1</i></figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_64_32.png" width="400px"/>
+				  <figcaption><i>-s 64 -l 32 -m 6</i></figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><b>Comparing the noise levels in soft shadows when rendering with 1, 4, 16, and 64 light rays (the -l flag) and with 1 sample per pixel (the -s flag) using light sampling, not uniform hemisphere sampling:</b></p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_1_1.png" width="400px"/>
+				  <figcaption><i>l = 1</i></figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_1_1_4light.png" width="400px"/>
+				  <figcaption><i>l = 4</i></figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bunny_1_1_16light.png" width="400px"/>
+				  <figcaption><i>l = 16</i></figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bunny_1_1_64light.png" width="400px"/>
+				  <figcaption><i>l = 64</i></figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<p><b>Comparing the results between uniform hemisphere sampling and lighting sampling:</b></p>
+
+
 
 		<h2>Part 4: Global Illumination</h2>
 		<p><b>Our implementation of the indirect lighting function:</b></p>
