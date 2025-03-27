@@ -153,7 +153,7 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="banana.png" width="400px"/>
-				  <figcaption><i>cube.dae</i></figcaption>
+				  <figcaption><i>banana.dae</i></figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -215,13 +215,13 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="CBbunny_16_8.png" width="400px"/>
-				  <figcaption><i>-s 16 -l 8</i></figcaption>
+				  <figcaption><i>-s 16 -l 8 -r 480 360</i></figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="CBbunny_H_64_32.png" width="400px"/>
-				  <figcaption><i>-s 64 -l 32 -m 6</i></figcaption>
+				  <figcaption><i>-s 64 -l 32 -m 6 -r 480 360</i></figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -233,13 +233,13 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="bunny_1_1.png" width="400px"/>
-				  <figcaption><i>-s 1 -l 1 -m 1</i></figcaption>
+				  <figcaption><i>-s 1 -l 1 -m 1 -r 480 360</i></figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="bunny_64_32.png" width="400px"/>
-				  <figcaption><i>-s 64 -l 32 -m 6</i></figcaption>
+				  <figcaption><i>-s 64 -l 32 -m 6 -r 480 360</i></figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -301,6 +301,7 @@
 
 		<p><b>Comparing rendered views with only direct illumination and indirect illumination:</b></p>
 
+		<p>As demonstrated below, the image with only direct illumination has sharp shadows and less color transfer, while the image with only indirect illumination showcases a softer, dimmer, and diffused image because of multiple bounces of light within the scene.</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 		<table style="width: 100%; text-align: center; border-collapse: collapse;">
 		<tr>
@@ -463,6 +464,10 @@
 
 		<p><b>Comparing rendered views of <i>CBspheres_lambertian.dae</i> with various sample-per-pixel rates, including at least 1, 2, 4, 8, 16, 64, and 1024, using 4 light rays:</b></p>
 
+		<p>As demonstrated below, every step up in sample count reduces the noise and the color transitions on the walls and the light falloff on the spheres look more consistent and smoother.
+
+
+		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 		<table style="width: 100%; text-align: center; border-collapse: collapse;">
 		<tr>
@@ -555,16 +560,6 @@
 		</div>
 
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
 		</div>
 	</body>
 </html>
