@@ -32,11 +32,9 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/ <a href="https://cal-cs184-student.github.io/hw-webpages-swetha-inas-1/">cs184.eecs.berkeley.edu/sp25</a>
 
 		<br>
-
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
 
 		<!--
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
@@ -50,9 +48,21 @@
 		<p>Our project aims to create impressionist renderings of real-life photographs. This is both an important and fascinating challenge as having the capability to reinterpret images with Monet's impressionist style bridges two eras together, introducing artistic styles of the past to newer generations and connecting contemporary life with historical art. When people reimagine their own photos in past styles, they gain a deeper appreciation for the art. It also empowers creativity and provides interactive experiences of digital art to users. We are planning to solve this problem by using techniques covered in class such as rasterization, blurring, sampling, color theory, texture mapping, and bezier curves/interpolation. The key challenge of this project is generating these impressionist renders while maintaining the integrity of the image. </p>
 
 		<h2>Goals and Deliverables</h2>
-		<p>Below is an image depicting a tea plant with young leaves silhouetted against a vibrant orange and yellow sunset.</p>
+		<p>Below is an image depicting tea plants with young leaves silhouetted against a vibrant orange and yellow sunset.</p>
+
+		<figure>
+			<img src="photo.png" alt="Image of tea plants" style="width:50%"/>
+			<figcaption>Tea plants under a sunset</figcaption>
+		</figure>
+
 
 		<p>Our project's goal is to output something along the lines of the image below, which was generated using Imagen3, but with better attention to detail. As seen below, this impressionist rendering is not entirely accurate. For instance, the tea plant in the foreground is now moved to the center whereas it was previously on the left side of the original image. Also, the tree in the background which was previously blurred no longer exists. Additionally, some other details like the shadows of the tree in the background are completely missing from the recreated image. Our project aims to mitigate these issues by creating more realistic renders using graphics techniques learned in class.</p>
+
+
+		<figure>
+			<img src="imagen.png" alt="Imagen Impressionist Render" style="width:50%"/>
+			<figcaption>Imagen Impressionist Render</figcaption>
+		</figure>
 
 		<p>Our project is non-interactive, however, users will be able to upload an image through our pipeline which will then get monet-ified. There aren't any great quantitative metrics to measure how good our generated art would be due to the subjective nature of the topic, so we might have to settle on qualitative metrics. One way of gauging how good our painting is is using GPT to evaluate it by comparing it to a real impressionistic painting (created by Monet, for example) and describing a similar scene. Another way is to simply eyeball it and observe key qualities of impressionism such as brush strokes, distinct colors, non-realism, etc.</p>
 
@@ -120,22 +130,12 @@
 		<h2>Resources</h2>
 		
 		<ul>
-			<li>Stroke based rendering: https://www.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/S02c23_3.pdf</li>
-			<li>Characteristics of impressionism for reference: https://arthistorywithalder.com/impressionism-art-characteristics/</li>
-			<li>PBRT to refer to in times of crisis: https://www.pbrt.org/</li>
-			<li>https://opencv.org/</li>
+			<li>Stroke based rendering: <a href="https://www.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/S02c23_3.pdf"></a></li>
+			<li>Characteristics of impressionism for reference: <a href="https://arthistorywithalder.com/impressionism-art-characteristics/"></a></li>
+			<li>PBRT to refer to in times of crisis: <a href="https://www.pbrt.org/"></a></li>
+			<li>OpenCV: <a href="https://opencv.org/"></a></li>
 		</ul>
 
-		<h2>Additional Notes (please remove)</h2>
-		<ul>
-			<li>You can also add code if you'd like as so: <code>code code code</code></li>
-			<li>If you'd like to add math equations, 
-				<ul>
-					<li>You can write inline equations like so: \( a^2 + b^2 = c^2 \)</li>
-					<li>You can write display equations like so: \[ a^2 + b^2 = c^2 \]</li>
-				</ul>
-			</li>
-		</ul>
 		</div>
 	</body>
 </html>
