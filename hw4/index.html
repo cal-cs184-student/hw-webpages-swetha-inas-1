@@ -42,8 +42,7 @@
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
-
+		<p>In this assignment, we built a grid of evenly spaced point masses connected by springs to model a cloth. We simulated cloth dynamics by numerically integrating the motion of each point mass using Verlet integration. This required computing external and spring correction forces, applying damping, and enforcing spring length constraints to prevent unrealistic stretching. Next, we added support for cloth collisions with spheres and planes by detecting intersections and adjusting point mass positions based on the collision surfaces. We also implemented cloth self-collision to ensure that the cloth folds over itself realistically rather than clipping through itself. Finally, we implemented vertex and fragment shaders to achieve various shading effects, including diffuse and Blinn-Phong lighting, texture mapping, bump and displacement mapping, and environment-mapped reflections. Through this assignment, we gained hands-on experience with mass-spring systems, collision detection and response, and various shading techniques.</p>
 		<h2>Part 1: Masses and springs</h2>
 		<p><b>Screenshots of scene/pinned2.json:</b></p>
 
@@ -343,40 +342,37 @@
 		<p>Next, we compute the unit direction vector from the sphere’s origin to the point mass's position:</p>
 		
 		
-		<pre><strong>Vector3D dir = (pm.position - origin) / (pm.position - origin).norm();</strong></pre>
+		<strong>Vector3D dir = (pm.position - origin) / (pm.position - origin).norm();</strong>
 		
 		
 		<p>We then use this direction to find the point on the sphere’s surface that the point mass should have intersected:</p>
 		
 		
-		<pre><strong>Vector3D tangentPoint = origin + dir * radius;</strong></pre>
+		<strong>Vector3D tangentPoint = origin + dir * radius;</strong>
 		
 		
 		<p>To determine the necessary correction, we calculate the unit vector from the point mass’s <strong>last_position</strong> to the <strong>tangentPoint</strong>, along with the corresponding distance:</p>
 		
 		
-		<pre><strong>
+		<strong>
 		Vector3D pos_last_to_tangent_unit = (tangentPoint - pm.last_position) / (tangentPoint - pm.last_position).norm();
 		double curr_len = (tangentPoint - pm.last_position).norm();
-		</strong></pre>
+		</strong>
 		
 		
 		<p>We then compute the new position of the point mass by applying the correction vector from its <strong>last_position</strong>, scaled by <strong>friction</strong>, and update <strong>pm.position</strong> accordingly:</p>
 		
 		
-		<pre><strong>Vector3D new_position = pm.last_position + (pos_last_to_tangent_unit * curr_len) * (1 - friction);</strong></pre>
-		
-		
-		<hr>
+		<strong>Vector3D new_position = pm.last_position + (pos_last_to_tangent_unit * curr_len) * (1 - friction);</strong>
 		
 		
 		<p>To handle collisions with planes, we implemented <strong>Plane::collide(...)</strong>. First, we determine which side of the plane the point mass's current and previous positions are on by taking the dot product between the plane’s <strong>normal</strong> and the vector from a point on the plane to each position:</p>
 		
 		
-		<pre><strong>
+		<strong>
 		double curr_side_dir = dot(pm.position - point, normal);
 		double prev_side_dir = dot(pm.last_position - point, normal);
-		</strong></pre>
+		</strong>
 		
 		
 		<p>If <strong>curr_side_dir</strong> and <strong>prev_side_dir</strong> have opposite signs, the point mass has crossed the plane during the last time step, indicating a collision.</p>
@@ -384,39 +380,30 @@
 		
 		<p>In this case, we compute the time <strong>t</strong> at which the point mass would have intersected the plane, assuming it moved along the direction of the plane's normal:</p>
 		
-		
-		<pre><strong>double t = dot((point - pm.position), normal) / dot(normal, normal);</strong></pre>
-		
+		<strong>double t = dot((point - pm.position), normal) / dot(normal, normal);</strong>
 		
 		<p>Using this, we calculate the tangent point of intersection:</p>
 		
-		
-		<pre><strong>Vector3D tangentPoint = pm.position + t * normal;</strong></pre>
+		<strong>Vector3D tangentPoint = pm.position + t * normal;</strong>
 		
 		
 		<p>To resolve the collision, we apply a small offset (<strong>SURFACE_OFFSET</strong>) along the plane’s <strong>normal</strong> to slightly lift the point mass off the surface:</p>
 		
-		
-		<pre><strong>tangentPoint += SURFACE_OFFSET * normal;</strong></pre>
+		<strong>tangentPoint += SURFACE_OFFSET * normal;</strong>
 		
 		
 		<p>We then compute the unit vector from <strong>last_position</strong> to the adjusted <strong>tangentPoint</strong>, along with the distance:</p>
 		
-		
-		<pre><strong>
+		<strong>
 		Vector3D pos_last_to_tangent_unit = (tangentPoint - pm.last_position) / (tangentPoint - pm.last_position).norm();
 		double curr_len = (tangentPoint - pm.last_position).norm();
-		</strong></pre>
+		</strong>
 		
 		
 		<p>Finally, we compute the new position of the point mass by applying the correction, scaled by <strong>friction</strong>, and update <strong>pm.position</strong>:</p>
 		
-		
-		<pre><strong>Vector3D new_position = pm.last_position + (pos_last_to_tangent_unit * curr_len) * (1 - friction);</strong></pre>
-		
-		
-		<hr>
-		
+		<strong>Vector3D new_position = pm.last_position + (pos_last_to_tangent_unit * curr_len) * (1 - friction);</strong>
+
 		
 		<p>We also updated <strong>Cloth::simulate(...)</strong> to iterate through each point mass and, for each one, check for collisions with all collision objects by calling their <strong>collide</strong> function.</p>
 
@@ -462,17 +449,17 @@
 		<p>In our implementation, we first modified <strong>Cloth::hash_position(...)</strong> to partition the 3D space into discrete 3D boxes. Each box is defined with the following dimensions:</p>
 
 
-		<pre><strong>
+		<strong>
 		double w = 3 * width / num_width_points;
 		double h = 3 * height / num_height_points;
 		double t = max(w, h);
-		</strong></pre>
+		</strong>
 
 
 		<p>We use floor division to determine the index (0-based) of the box that a given position belongs to in each dimension:</p>
 
 
-		<pre><strong>Vector3D newPos = {floor(pos.x / w), floor(pos.y / h), floor(pos.z / t)};</strong></pre>
+		<strong>Vector3D newPos = {floor(pos.x / w), floor(pos.y / h), floor(pos.z / t)};</strong>
 
 
 		<p>Here, <strong>newPos.x</strong> represents the index of the box along the x-axis that <strong>pos</strong> belongs to, <strong>newPos.y</strong> for the y-axis, and <strong>newPos.z</strong> for the z-axis.</p>
@@ -481,37 +468,30 @@
 		<p>We compute a unique float hash key for this box using the following expression:</p>
 
 
-		<pre><strong>float val = newPos.x * w + newPos.y * h + newPos.z * t;</strong></pre>
+		<strong>float val = newPos.x * w + newPos.y * h + newPos.z * t;</strong>
 
 
 		<p>This hash key is used to associate all point masses that fall within the same spatial box.</p>
 
-
-		<hr>
-
-
 		<p>Next, we implemented <strong>Cloth::build_spatial_map()</strong>. In this function, we iterate through all point masses and compute a hash key for each one:</p>
 
 
-		<pre><strong>float val = hash_position(point_masses[i].position);</strong></pre>
+		<strong>float val = hash_position(point_masses[i].position);</strong>
 
 
 		<p>If this hash key already exists in the map, we add the point mass to the existing vector of point masses associated with the key:</p>
 
 
-		<pre><strong>map[val]->push_back(&point_masses[i]);</strong></pre>
+		<strong>map[val]->push_back(&point_masses[i]);</strong>
 
 
 		<p>Otherwise, we initialize a new vector containing the current point mass and insert it into the map with the computed hash key:</p>
 
 
-		<pre><strong>
+		<strong>
 		vector&lt;PointMass *&gt; *pMassList = new vector&lt;PointMass *&gt;{&amp;point_masses[i]};
 		map[val] = pMassList;
-		</strong></pre>
-
-
-		<hr>
+		</strong>
 
 
 		<p>After building the spatial map, we implemented <strong>Cloth::self_collide(...)</strong> as follows:</p>
@@ -520,7 +500,7 @@
 		<p>We first compute the hash key for the given point mass:</p>
 
 
-		<pre><strong>float val = hash_position(pm.position);</strong></pre>
+		<strong>float val = hash_position(pm.position);</strong>
 
 
 		<p>If the hash key exists in the spatial map, we retrieve the corresponding vector of point masses. We iterate through each of these point masses, skipping the one that is currently being tested (to avoid self-collision).</p>
@@ -529,31 +509,27 @@
 		<p>For each remaining point mass, we calculate the distance to the current point mass:</p>
 
 
-		<pre><strong>double curr_len = (pMass->position - pm.position).norm();</strong></pre>
+		<strong>double curr_len = (pMass->position - pm.position).norm();</strong>
 
 
 		<p>If this distance is less than <strong>2 * thickness</strong>, a collision is detected. We then compute a correction vector to resolve the overlap:</p>
 
 
-		<pre><strong>
+		<strong>
 		Vector3D pos_cur_to_cand_unit = (pMass->position - pm.position) / (pMass->position - pm.position).norm();
 		double correction = curr_len - 2 * thickness;
 		correctionVec += pos_cur_to_cand_unit * correction;
 		numCorrections += 1;
-		</strong></pre>
+		</strong>
 
 
 		<p>At the end of the iteration, if <strong>numCorrections &gt; 0</strong>, we compute the average correction vector by dividing the total correction by <strong>(numCorrections * simulation_steps)</strong>, and apply it to <strong>pm.position</strong>:</p>
 
 
-		<pre><strong>
+		<strong>
 		correctionVec /= (numCorrections * simulation_steps);
 		pm.position += correctionVec;
-		</strong></pre>
-
-
-		<hr>
-
+		</strong>
 
 		<p>Finally, we updated <strong>Cloth::simulate(...)</strong> to iterate through each point mass and, for each one, check for self-collisions by calling the <strong>self_collide</strong> function.</p>
 
@@ -765,6 +741,32 @@
 		<p><b>Comparing how the two shaders react to the sphere:</b></p>
 		<p>When we change the sphere mesh coarseness, the quality of both the bump and displacement mapping is impacted. In the case of bump mapping, moving from a more coarse mesh to a finer mesh doesn’t significantly change the visual appearance, since bump mapping only affects the surface normals. However, for displacement mapping, on the coarse mesh, the details look blocky as there aren’t enough vertices. But on the finer mesh, the displacement map results in a much more realistic surface deformation and the details of the woven texture look more natural and sharp.</p>
 
+
+		<p><b>Screenshots of our mirror shader on the cloth and on the sphere:</b></p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			<tr>
+						<td style="text-align: center;">
+							<img src="5_5_mirror_cloth.png" width="400px"/>
+			<figcaption><i>Mirror shader on the draped cloth.</i></figcaption>
+						</td>
+					</tr>
+				<tr>
+					<td style="text-align: center;">
+						<img src="5_5_mirror_sphere.png" width="400px"/>
+						<figcaption><i>Mirror shader on the sphere. </i></figcaption>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: center;">
+						<img src="5_mirror_cloth.png" width="400px"/>
+						<figcaption><i>Mirror shader on the cloth. </i></figcaption>
+					</td>
+				</tr>
+				</table>
+			</div>
+			
 
 		</div>
 	</body>
